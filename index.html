@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Command Center | Your Workflow Accelerator</title>
+    <meta name="description" content="Generate branch names and git commands instantly from your task titles." />
+    <script src="https://unpkg.com/lucide@latest"></script>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Command Center</h1>
+        <p>Transform tasks into git workflows instantly</p>
+      </header>
+
+      <main class="task-deck">
+        <div class="workflow-selector">
+          <button class="wf-btn active" data-wf="new">New Branch</button>
+          <button class="wf-btn" data-wf="recreate">Recreate Branch</button>
+        </div>
+
+        <div class="input-row">
+          <div class="input-group" style="flex: 2;">
+            <label class="input-label" for="task-title">Task Title / Branch</label>
+            <input type="text" id="task-title" placeholder="e.g. Add user authentication flow" autocomplete="off">
+          </div>
+          <div class="input-group" id="base-branch-group" style="flex: 1; display: none;">
+            <label class="input-label" for="base-branch">Base Branch</label>
+            <input type="text" id="base-branch" value="dev" autocomplete="off">
+          </div>
+        </div>
+
+        <label class="input-label">Task Type</label>
+        <div class="task-types" id="task-types">
+          <button class="type-btn active" data-type="feature">Feature</button>
+          <button class="type-btn" data-type="fix">Fix</button>
+          <button class="type-btn" data-type="hotfix">Hotfix</button>
+          <button class="type-btn" data-type="chore">Chore</button>
+          <button class="type-btn" data-type="docs">Docs</button>
+          <button class="type-btn" data-type="refactor">Refactor</button>
+        </div>
+
+        <div id="output-section" class="output-section">
+          <label class="input-label">Target Branch</label>
+          <div class="branch-preview">
+            <span class="branch-name" id="branch-name">feature/example-task</span>
+            <button class="copy-btn" id="copy-branch">Copy</button>
+          </div>
+
+          <label class="input-label" style="display: flex; justify-content: space-between; align-items: center;">
+            Workflow Commands
+            <button class="copy-btn" id="copy-all" style="background: rgba(255, 255, 255, 0.05); font-size: 0.7rem;">Copy Sequence</button>
+          </label>
+          <div class="command-list" id="command-list">
+            <!-- Commands will be injected here -->
+          </div>
+        </div>
+      </main>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
