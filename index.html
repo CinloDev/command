@@ -10,14 +10,17 @@
   <body>
     <div class="container">
       <header>
-        <h1>Command Center</h1>
-        <p>Transform tasks into git workflows instantly</p>
+        <div class="lang-switcher">
+          <button id="lang-btn">ES</button>
+        </div>
+        <h1 id="txt-title">Command Center</h1>
+        <p id="txt-subtitle">Transform tasks into git workflows instantly</p>
       </header>
 
       <main class="task-deck">
         <div class="workflow-selector">
-          <button class="wf-btn active" data-wf="new">New Branch</button>
-          <button class="wf-btn" data-wf="recreate">Recreate Branch</button>
+          <button class="wf-btn active" data-wf="new" id="btn-wf-new">New Branch</button>
+          <button class="wf-btn" data-wf="recreate" id="btn-wf-recreate">Recreate Branch</button>
         </div>
 
         <div class="input-row">
@@ -31,7 +34,7 @@
           </div>
         </div>
 
-        <label class="input-label">Task Type</label>
+        <label class="input-label" id="lbl-task-type">Task Type</label>
         <div class="task-types" id="task-types">
           <button class="type-btn active" data-type="feature">Feature</button>
           <button class="type-btn" data-type="fix">Fix</button>
@@ -42,14 +45,14 @@
         </div>
 
         <div id="output-section" class="output-section">
-          <label class="input-label">Target Branch</label>
+          <label class="input-label" id="lbl-target-branch">Target Branch</label>
           <div class="branch-preview">
-            <span class="branch-name" id="branch-name">feature/example-task</span>
+            <input type="text" class="branch-input" id="branch-name-input" spellcheck="false" autocomplete="off">
             <button class="copy-btn" id="copy-branch">Copy</button>
           </div>
 
           <label class="input-label" style="display: flex; justify-content: space-between; align-items: center;">
-            Workflow Commands
+            <span id="lbl-workflow-cmds">Workflow Commands</span>
             <button class="copy-btn" id="copy-all" style="background: rgba(255, 255, 255, 0.05); font-size: 0.7rem;">Copy Sequence</button>
           </label>
           <div class="command-list" id="command-list">
