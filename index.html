@@ -24,9 +24,14 @@
         </div>
 
         <div class="input-row">
-          <div class="input-group" style="flex: 2;">
+          <div class="input-group" style="flex: 2; position: relative;">
             <label class="input-label" for="task-title">Task Title / Branch</label>
-            <input type="text" id="task-title" placeholder="e.g. Add user authentication flow" autocomplete="off">
+            <div style="position: relative;">
+              <input type="text" id="task-title" placeholder="e.g. Add user authentication flow" autocomplete="off" style="padding-right: 50px;">
+              <button id="translate-btn" class="translate-trigger" title="Translate Title">
+                <i data-lucide="languages"></i>
+              </button>
+            </div>
           </div>
           <div class="input-group" id="base-branch-group" style="flex: 1; display: none;">
             <label class="input-label" for="base-branch">Base Branch</label>
@@ -48,7 +53,13 @@
           <label class="input-label" id="lbl-target-branch">Target Branch</label>
           <div class="branch-preview">
             <input type="text" class="branch-input" id="branch-name-input" spellcheck="false" autocomplete="off">
+            <button class="reset-btn" id="reset-branch" title="Reset to automatic name" style="display: none;">
+              <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
+            </button>
             <button class="copy-btn" id="copy-branch">Copy</button>
+          </div>
+          <div id="manual-notice" class="manual-notice" style="display: none;">
+            Manual mode: Task type only affects commit message
           </div>
 
           <label class="input-label" id="lbl-commit-msg">Commit Message</label>

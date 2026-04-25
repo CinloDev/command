@@ -25,7 +25,8 @@ const translations = {
     cmdPull: 'Pull Latest',
     cmdRecreate: 'Recreate Branch',
     cmdPushNew: 'Push Fresh Branch',
-    cmdSync: 'Pro/Team Sync'
+    cmdSync: 'Pro/Team Sync',
+    manualNotice: 'Manual mode: Task type only affects commit message'
   },
   es: {
     title: 'Centro de Mandos',
@@ -51,7 +52,8 @@ const translations = {
     cmdPull: 'Bajar lo último',
     cmdRecreate: 'Recrear Rama',
     cmdPushNew: 'Subir Rama Limpia',
-    cmdSync: 'Sincronización Pro'
+    cmdSync: 'Sincronización Pro',
+    manualNotice: 'Modo manual: El tipo de tarea solo afecta al commit'
   }
 };
 
@@ -85,6 +87,9 @@ const workflowButtons = document.querySelectorAll('.wf-btn');
 const baseBranchGroup = document.getElementById('base-branch-group');
 const baseBranchInput = document.getElementById('base-branch');
 const langBtn = document.getElementById('lang-btn');
+const translateBtn = document.getElementById('translate-btn');
+const resetBranchBtn = document.getElementById('reset-branch');
+const manualNotice = document.getElementById('manual-notice');
 
 let currentType = 'feature';
 let currentWorkflow = 'new';
@@ -103,12 +108,13 @@ const updateTranslations = () => {
   document.getElementById('lbl-workflow-cmds').textContent = t.lblWorkflow;
   document.getElementById('copy-branch').textContent = t.btnCopy;
   document.getElementById('copy-all').textContent = t.btnCopySeq;
+  manualNotice.textContent = t.manualNotice;
   
   const labels = document.querySelectorAll('.input-label');
   labels[0].textContent = t.lblTask;
   labels[1].textContent = t.lblBase;
   
-  langBtn.textContent = currentLang === 'en' ? 'ES' : 'EN';
+  langBtn.textContent = currentLang.toUpperCase();
   updateUI();
 };
 
@@ -162,6 +168,37 @@ const slugify = (text) => {
   return parts.join('-') || 'task';
 };
 
+const translateTitle = async (e) => {
+  if (e) e.preventDefault();
+  const text = taskTitleInput.value.trim();
+  if (!text) return;
+
+  translateBtn.classList.add('loading');
+  
+  const hasSpanishChars = /[áéíóúüñ]/i.test(text);
+  const commonSpanishWords = /\b(el|la|los|las|de|con|para|por|falla|error|inicio|migrar|nuevo|sistema|visual|reemplazar|unificar)\b/i.test(text);
+  const isSpanish = hasSpanishChars || commonSpanishWords;
+  const langPair = isSpanish ? 'es|en' : 'en|es';
+
+  try {
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${langPair}`;
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (data.responseData && data.responseData.translatedText) {
+      taskTitleInput.value = data.responseData.translatedText;
+      updateUI();
+    }
+  } catch (error) {
+    console.error('Translation error:', error);
+    alert('Translation failed. Please try again.');
+  } finally {
+    translateBtn.classList.remove('loading');
+  }
+};
+
+translateBtn.addEventListener('click', translateTitle);
+
 const updateUI = () => {
   const title = taskTitleInput.value.trim();
   if (title.length > 0) {
@@ -172,6 +209,11 @@ const updateUI = () => {
         ? title 
         : `${currentType}/${slugify(title)}`;
       branchNameInput.value = generatedBranch;
+      resetBranchBtn.style.display = 'none';
+      manualNotice.style.display = 'none';
+    } else {
+      resetBranchBtn.style.display = 'flex';
+      manualNotice.style.display = 'flex';
     }
 
     if (!isManualCommit) {
@@ -187,6 +229,8 @@ const updateUI = () => {
     outputSection.classList.remove('visible');
     isManualBranch = false;
     isManualCommit = false;
+    resetBranchBtn.style.display = 'none';
+    manualNotice.style.display = 'none';
   }
 };
 
@@ -197,13 +241,38 @@ const autoResizeCommit = () => {
 
 branchNameInput.addEventListener('input', () => {
   isManualBranch = true;
-  renderCommands(branchNameInput.value, commitMsgInput.value);
+  const sanitized = branchNameInput.value
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\d\/\-._]/g, '');
+  if (branchNameInput.value !== sanitized) branchNameInput.value = sanitized;
+  updateUI();
 });
 
 commitMsgInput.addEventListener('input', () => {
   isManualCommit = true;
   autoResizeCommit();
   renderCommands(branchNameInput.value, commitMsgInput.value);
+});
+
+resetBranchBtn.addEventListener('click', () => {
+  isManualBranch = false;
+  updateUI();
+});
+
+window.addEventListener('keydown', (e) => {
+  if (e.altKey && e.key >= '1' && e.key <= '6') {
+    e.preventDefault();
+    const index = parseInt(e.key) - 1;
+    if (typeButtons[index]) typeButtons[index].click();
+  }
+  if (e.altKey && e.key.toLowerCase() === 't') {
+    e.preventDefault();
+    translateBtn.click();
+  }
+  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'c') {
+    e.preventDefault();
+    copyAllBtn.click();
+  }
 });
 
 const renderCommands = (branch, commitMsg) => {
@@ -232,17 +301,24 @@ const renderCommands = (branch, commitMsg) => {
     ];
   }
 
-  commandListContainer.innerHTML = commands.map(c => `
-    <div class="command-card">
+  commandListContainer.innerHTML = '';
+  commands.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'command-card';
+    card.innerHTML = `
       <div class="command-info">
         <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 4px;">${c.label}</div>
         <div class="command-text">${c.cmd}</div>
       </div>
-      <button class="copy-btn" onclick="copyToClipboard('${c.cmd}', this)">
+      <button class="copy-btn">
         <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
       </button>
-    </div>
-  `).join('');
+    `;
+    card.querySelector('.copy-btn').addEventListener('click', (e) => {
+      copyToClipboard(c.cmd, e.currentTarget);
+    });
+    commandListContainer.appendChild(card);
+  });
   if (window.lucide) window.lucide.createIcons();
 };
 
