@@ -17,7 +17,23 @@
         <p id="txt-subtitle">Transform tasks into git workflows instantly</p>
       </header>
 
+      <nav class="top-nav">
+        <button class="nav-item active" data-module="git">
+          <i data-lucide="git-branch"></i>
+          <span>Git</span>
+        </button>
+        <button class="nav-item" data-module="node">
+          <i data-lucide="package"></i>
+          <span>Node</span>
+        </button>
+        <button class="nav-item" data-module="docker">
+          <i data-lucide="container"></i>
+          <span>Docker</span>
+        </button>
+      </nav>
+
       <main class="task-deck">
+        <div id="module-git" class="module-content active">
         <div class="workflow-selector">
           <button class="wf-btn active" data-wf="new" id="btn-wf-new">New Branch</button>
           <button class="wf-btn" data-wf="recreate" id="btn-wf-recreate">Recreate Branch</button>
@@ -73,6 +89,105 @@
           </label>
           <div class="command-list" id="command-list">
             <!-- Commands will be injected here -->
+          </div>
+        </div>
+        </div><!-- End module-git -->
+
+        <div id="module-node" class="module-content">
+          <label class="input-label" id="lbl-node-manager">Package Manager</label>
+          <div class="workflow-selector" style="margin-bottom: 24px;">
+            <button class="node-mgr-btn active" data-mgr="npm">NPM</button>
+            <button class="node-mgr-btn" data-mgr="yarn">Yarn</button>
+            <button class="node-mgr-btn" data-mgr="pnpm">PNPM</button>
+          </div>
+
+          <div class="input-row">
+            <div class="input-group" style="flex: 2;">
+              <label class="input-label" id="lbl-node-install">Install Packages</label>
+              <input type="text" id="node-pkg-input" placeholder="e.g. lodash axios express" autocomplete="off">
+            </div>
+            <div class="input-group" style="flex: 1;">
+              <label class="input-label" id="lbl-node-type">Type</label>
+              <div class="workflow-selector" style="margin-bottom: 0;">
+                <button class="node-type-btn active" data-type="std">Prod</button>
+                <button class="node-type-btn" data-type="dev">Dev</button>
+                <button class="node-type-btn" data-type="glob">Global</button>
+              </div>
+            </div>
+          </div>
+
+          <label class="input-label" id="lbl-node-quick">Quick NPM Actions</label>
+          <div class="task-types" style="margin-bottom: 30px;">
+            <button class="node-action-btn" data-cmd="npm init -y">Init</button>
+            <button class="node-action-btn" data-cmd="npm install">Install All</button>
+            <button class="node-action-btn" data-cmd="npm audit fix">Audit Fix</button>
+            <button class="node-action-btn" data-cmd="npm version patch">Patch</button>
+            <button class="node-action-btn" data-cmd="npm run dev">Run Dev</button>
+          </div>
+
+          <div id="node-output" class="output-section">
+            <label class="input-label" id="lbl-node-output">Generated Commands</label>
+            <div class="command-list" id="node-command-list">
+              <!-- Node commands injected here -->
+            </div>
+          </div>
+        </div><!-- End module-node -->
+
+        <div id="module-docker" class="module-content">
+          <div class="input-row">
+            <div class="input-group" style="flex: 1.5;">
+              <label class="input-label" id="lbl-docker-img">Image Name</label>
+              <input type="text" id="docker-img-input" placeholder="e.g. my-app:latest" autocomplete="off">
+            </div>
+            <div class="input-group" style="flex: 1;">
+              <label class="input-label" id="lbl-docker-port">Ports</label>
+              <input type="text" id="docker-port-input" placeholder="e.g. 8080:80" autocomplete="off">
+            </div>
+          </div>
+
+          <div class="input-row">
+            <div class="input-group" style="flex: 1;">
+              <label class="input-label" id="lbl-docker-service">Service Name</label>
+              <input type="text" id="docker-service-input" value="api" placeholder="e.g. api, app, web" autocomplete="off">
+            </div>
+            <div class="input-group" style="flex: 1.5;">
+              <label class="input-label" id="lbl-docker-file">Compose File</label>
+              <input type="text" id="docker-file-input" value="docker-compose.dev.yml" placeholder="e.g. docker-compose.yml" autocomplete="off">
+            </div>
+          </div>
+
+          <label class="input-label" id="lbl-docker-compose">Docker Compose</label>
+          <div class="task-types" style="margin-bottom: 24px;">
+            <button class="docker-action-btn" data-cmd="docker-compose up -d">Compose Up</button>
+            <button class="docker-action-btn" data-cmd="docker-compose down">Compose Down</button>
+            <button class="docker-action-btn" data-cmd="docker-compose restart">Restart</button>
+          </div>
+
+          <label class="input-label" id="lbl-docker-quick">Quick Management</label>
+          <div class="task-types" style="margin-bottom: 30px;">
+            <button class="docker-action-btn" data-cmd="docker ps">List Running</button>
+            <button class="docker-action-btn" data-cmd="docker images">List Images</button>
+            <button class="docker-action-btn" data-cmd="docker system prune -a --volumes">Deep Clean</button>
+          </div>
+
+          <div id="docker-output" class="output-section">
+            <label class="input-label" id="lbl-docker-output">Generated Commands</label>
+            <div class="command-list" id="docker-command-list">
+              <!-- Docker commands injected here -->
+            </div>
+          </div>
+
+          <div class="docker-library">
+            <div class="library-header">
+              <label class="input-label" id="lbl-docker-vault">Docker Vault (Cheat Sheet)</label>
+              <div class="search-box">
+                <i data-lucide="search" style="width: 14px; height: 14px;"></i>
+                <input type="text" id="docker-search" placeholder="Search command (e.g. logs, prune, network)..." autocomplete="off">
+              </div>
+            </div>
+            <div id="docker-library-grid" class="library-grid">
+              <!-- Library items will be injected here -->
+            </div>
           </div>
         </div>
       </main>

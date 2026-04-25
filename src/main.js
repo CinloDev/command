@@ -26,7 +26,21 @@ const translations = {
     cmdRecreate: 'Recreate Branch',
     cmdPushNew: 'Push Fresh Branch',
     cmdSync: 'Pro/Team Sync',
-    manualNotice: 'Manual mode: Task type only affects commit message'
+    manualNotice: 'Manual mode: Task type only affects commit message',
+    nodeMgr: 'Package Manager',
+    nodeInstall: 'Install Packages',
+    nodeType: 'Type',
+    nodeQuick: 'Quick NPM Actions',
+    nodeOutput: 'Generated Commands',
+    dockerImg: 'Image Name',
+    dockerPort: 'Ports (Host:Container)',
+    dockerCompose: 'Docker Compose',
+    dockerQuick: 'Quick Management',
+    dockerOutput: 'Generated Commands',
+    dockerVault: 'Docker Vault (Cheat Sheet)',
+    dockerSearch: 'Search command...',
+    dockerService: 'Service Name',
+    dockerFile: 'Compose File'
   },
   es: {
     title: 'Centro de Mandos',
@@ -53,7 +67,21 @@ const translations = {
     cmdRecreate: 'Recrear Rama',
     cmdPushNew: 'Subir Rama Limpia',
     cmdSync: 'Sincronización Pro',
-    manualNotice: 'Modo manual: El tipo de tarea solo afecta al commit'
+    manualNotice: 'Modo manual: El tipo de tarea solo afecta al commit',
+    nodeMgr: 'Gestor de Paquetes',
+    nodeInstall: 'Instalar Paquetes',
+    nodeType: 'Tipo',
+    nodeQuick: 'Acciones Rápidas NPM',
+    nodeOutput: 'Comandos Generados',
+    dockerImg: 'Nombre de Imagen',
+    dockerPort: 'Puertos (Host:Contenedor)',
+    dockerCompose: 'Docker Compose',
+    dockerQuick: 'Gestión Rápida',
+    dockerOutput: 'Comandos Generados',
+    dockerVault: 'Bóveda de Docker (Guía Rápida)',
+    dockerSearch: 'Buscar comando...',
+    dockerService: 'Nombre del Servicio',
+    dockerFile: 'Archivo Compose'
   }
 };
 
@@ -109,6 +137,24 @@ const updateTranslations = () => {
   document.getElementById('copy-branch').textContent = t.btnCopy;
   document.getElementById('copy-all').textContent = t.btnCopySeq;
   manualNotice.textContent = t.manualNotice;
+
+  // Node Labels
+  document.getElementById('lbl-node-manager').textContent = t.nodeMgr;
+  document.getElementById('lbl-node-install').textContent = t.nodeInstall;
+  document.getElementById('lbl-node-type').textContent = t.nodeType;
+  document.getElementById('lbl-node-quick').textContent = t.nodeQuick;
+  document.getElementById('lbl-node-output').textContent = t.nodeOutput;
+
+  // Docker Labels
+  document.getElementById('lbl-docker-img').textContent = t.dockerImg;
+  document.getElementById('lbl-docker-port').textContent = t.dockerPort;
+  document.getElementById('lbl-docker-compose').textContent = t.dockerCompose;
+  document.getElementById('lbl-docker-quick').textContent = t.dockerQuick;
+  document.getElementById('lbl-docker-output').textContent = t.dockerOutput;
+  document.getElementById('lbl-docker-vault').textContent = t.dockerVault;
+  document.getElementById('lbl-docker-service').textContent = t.dockerService;
+  document.getElementById('lbl-docker-file').textContent = t.dockerFile;
+  document.getElementById('docker-search').placeholder = t.dockerSearch;
   
   const labels = document.querySelectorAll('.input-label');
   labels[0].textContent = t.lblTask;
@@ -116,6 +162,7 @@ const updateTranslations = () => {
   
   langBtn.textContent = currentLang.toUpperCase();
   updateUI();
+  if (typeof renderDockerLibrary === 'function') renderDockerLibrary();
 };
 
 langBtn.addEventListener('click', () => {
@@ -377,4 +424,274 @@ workflowButtons.forEach(btn => {
 });
 
 baseBranchInput.addEventListener('input', updateUI);
+
+// MODULE SWITCHING
+const navItems = document.querySelectorAll('.nav-item');
+const moduleContents = document.querySelectorAll('.module-content');
+
+navItems.forEach(item => {
+  item.addEventListener('click', () => {
+    const module = item.dataset.module;
+    
+    // Update Nav
+    navItems.forEach(n => n.classList.remove('active'));
+    item.classList.add('active');
+    
+    // Update Content
+    moduleContents.forEach(m => m.classList.remove('active'));
+    document.getElementById(`module-${module}`).classList.add('active');
+    
+    // Update Theme
+    document.body.className = module === 'git' ? '' : `theme-${module}`;
+    
+    // Re-render icons if needed
+    if (window.lucide) window.lucide.createIcons();
+  });
+});
+
+// NODE MODULE LOGIC
+const nodePkgInput = document.getElementById('node-pkg-input');
+const nodeTypeBtns = document.querySelectorAll('.node-type-btn');
+const nodeMgrBtns = document.querySelectorAll('.node-mgr-btn');
+const nodeActionBtns = document.querySelectorAll('.node-action-btn');
+const nodeCommandList = document.getElementById('node-command-list');
+const nodeOutput = document.getElementById('node-output');
+
+let currentNodeType = 'std';
+let currentMgr = 'npm';
+
+const renderNodeCommands = () => {
+  const pkgs = nodePkgInput.value.trim();
+  let commands = [];
+
+  if (pkgs) {
+    let baseCmd = currentMgr === 'npm' ? 'npm install' : (currentMgr === 'yarn' ? 'yarn add' : 'pnpm add');
+    if (currentNodeType === 'dev') baseCmd += ' -D';
+    if (currentNodeType === 'glob') baseCmd += (currentMgr === 'npm' ? ' -g' : ' --global');
+    commands.push({ label: 'Install Dependencies', cmd: `${baseCmd} ${pkgs}` });
+  }
+
+  nodeOutput.classList.toggle('visible', commands.length > 0);
+  
+  nodeCommandList.innerHTML = '';
+  commands.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'command-card';
+    card.innerHTML = `
+      <div class="command-info">
+        <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 4px;">${c.label}</div>
+        <div class="command-text">${c.cmd}</div>
+      </div>
+      <button class="copy-btn">
+        <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
+      </button>
+    `;
+    card.querySelector('.copy-btn').addEventListener('click', (e) => {
+      copyToClipboard(c.cmd, e.currentTarget);
+    });
+    nodeCommandList.appendChild(card);
+  });
+  if (window.lucide) window.lucide.createIcons();
+};
+
+nodePkgInput.addEventListener('input', renderNodeCommands);
+
+nodeTypeBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    nodeTypeBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentNodeType = btn.dataset.type;
+    renderNodeCommands();
+  });
+});
+
+nodeMgrBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    nodeMgrBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentMgr = btn.dataset.mgr;
+    renderNodeCommands();
+  });
+});
+
+nodeActionBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    let cmd = btn.dataset.cmd;
+    const label = btn.textContent;
+    
+    // Transform command based on manager
+    if (currentMgr !== 'npm') {
+      if (cmd === 'npm init -y') cmd = `${currentMgr} init -y`;
+      if (cmd === 'npm install') cmd = `${currentMgr} install`;
+      if (cmd === 'npm audit fix') cmd = currentMgr === 'pnpm' ? 'pnpm audit --fix' : 'npm audit fix'; // Yarn audit fix is complex
+      if (cmd === 'npm version patch') cmd = `${currentMgr} version patch`;
+      if (cmd === 'npm run dev') cmd = currentMgr === 'yarn' ? 'yarn dev' : 'pnpm dev';
+    }
+    
+    const card = document.createElement('div');
+    card.className = 'command-card';
+    card.style.animation = 'slide-up 0.3s ease-out';
+    card.innerHTML = `
+      <div class="command-info">
+        <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 4px;">${label}</div>
+        <div class="command-text">${cmd}</div>
+      </div>
+      <button class="copy-btn">
+        <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
+      </button>
+    `;
+    card.querySelector('.copy-btn').addEventListener('click', (e) => {
+      copyToClipboard(cmd, e.currentTarget);
+    });
+    nodeCommandList.prepend(card);
+    nodeOutput.classList.add('visible');
+    if (window.lucide) window.lucide.createIcons();
+  });
+});
+
+// DOCKER MODULE LOGIC
+const dockerImgInput = document.getElementById('docker-img-input');
+const dockerPortInput = document.getElementById('docker-port-input');
+const dockerServiceInput = document.getElementById('docker-service-input');
+const dockerFileInput = document.getElementById('docker-file-input');
+const dockerActionBtns = document.querySelectorAll('.docker-action-btn');
+const dockerCommandList = document.getElementById('docker-command-list');
+const dockerOutput = document.getElementById('docker-output');
+
+const renderDockerCommands = () => {
+  const img = dockerImgInput.value.trim();
+  const ports = dockerPortInput.value.trim();
+  const svc = dockerServiceInput.value.trim() || 'api';
+  const file = dockerFileInput.value.trim() || 'docker-compose.dev.yml';
+  let commands = [];
+
+  if (img) {
+    commands.push({ label: 'Build Image', cmd: `docker build -t ${img} .` });
+    if (ports) {
+      commands.push({ label: 'Run Container', cmd: `docker run -d -p ${ports} --name ${img.split(':')[0]} ${img}` });
+    }
+  }
+  
+  // Re-render library too when inputs change
+  renderDockerLibrary(dockerSearchInput.value);
+
+  dockerOutput.classList.toggle('visible', commands.length > 0);
+  
+  dockerCommandList.innerHTML = '';
+  commands.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'command-card';
+    card.innerHTML = `
+      <div class="command-info">
+        <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 4px;">${c.label}</div>
+        <div class="command-text">${c.cmd}</div>
+      </div>
+      <button class="copy-btn">
+        <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
+      </button>
+    `;
+    card.querySelector('.copy-btn').addEventListener('click', (e) => {
+      copyToClipboard(c.cmd, e.currentTarget);
+    });
+    dockerCommandList.appendChild(card);
+  });
+  if (window.lucide) window.lucide.createIcons();
+};
+
+dockerImgInput.addEventListener('input', renderDockerCommands);
+dockerPortInput.addEventListener('input', renderDockerCommands);
+dockerServiceInput.addEventListener('input', renderDockerCommands);
+dockerFileInput.addEventListener('input', renderDockerCommands);
+
+dockerActionBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    let cmd = btn.dataset.cmd;
+    const file = dockerFileInput.value.trim() || 'docker-compose.dev.yml';
+    
+    // Inject file if it's a compose command
+    if (cmd.startsWith('docker-compose')) {
+      cmd = cmd.replace('docker-compose', `docker compose -f ${file}`);
+    }
+
+    const label = btn.textContent;
+    const card = document.createElement('div');
+    card.className = 'command-card';
+    card.style.animation = 'slide-up 0.3s ease-out';
+    card.innerHTML = `
+      <div class="command-info">
+        <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 4px;">${label}</div>
+        <div class="command-text">${cmd}</div>
+      </div>
+      <button class="copy-btn">
+        <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
+      </button>
+    `;
+    card.querySelector('.copy-btn').addEventListener('click', (e) => {
+      copyToClipboard(cmd, e.currentTarget);
+    });
+    dockerCommandList.prepend(card);
+    dockerOutput.classList.add('visible');
+    if (window.lucide) window.lucide.createIcons();
+  });
+});
+
+// DOCKER LIBRARY DATA (Templates)
+const DOCKER_LIBRARY = [
+  // Compose Basics
+  { desc: { en: 'Stop containers (keep them)', es: 'Parar contenedores (sin borrarlos)' }, cmd: (f, s) => `docker compose -f ${f} stop`, tags: 'stop compose pause' },
+  { desc: { en: 'Start existing containers', es: 'Iniciar contenedores detenidos' }, cmd: (f, s) => `docker compose -f ${f} start`, tags: 'start compose' },
+  { desc: { en: 'Down (delete containers/networks)', es: 'Bajar docker (elimina todo)' }, cmd: (f, s) => `docker compose -f ${f} down`, tags: 'down delete remove' },
+  { desc: { en: 'Up -d (create and start)', es: 'Levantar docker (background)' }, cmd: (f, s) => `docker compose -f ${f} up -d`, tags: 'up start background' },
+  
+  // Laravel / Artisan (Your notes)
+  { desc: { en: 'Artisan: Migrate', es: 'Artisan: Correr migraciones' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} php artisan migrate`, tags: 'laravel artisan migrate php' },
+  { desc: { en: 'Artisan: Fresh + Seed', es: 'Artisan: Reset completo + Seed' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} php artisan migrate:fresh --seed`, tags: 'laravel artisan fresh seed php' },
+  { desc: { en: 'Artisan: DB Seed', es: 'Artisan: Cargar seeders' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} php artisan db:seed`, tags: 'laravel artisan seed php' },
+  { desc: { en: 'Artisan: Tinker', es: 'Artisan: Entrar a Tinker' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} php artisan tinker`, tags: 'laravel artisan tinker php' },
+  { desc: { en: 'Artisan: Make Seeder', es: 'Artisan: Crear nuevo seeder' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} php artisan make:seeder NewSeeder`, tags: 'laravel artisan make seeder php' },
+  { desc: { en: 'Artisan: List Routes', es: 'Artisan: Listar rutas' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} php artisan route:list`, tags: 'laravel artisan route list' },
+  
+  // System
+  { desc: { en: 'Check if Docker is active', es: 'Verificar si Docker está activo' }, cmd: (f, s) => `docker info`, tags: 'info status check' },
+  { desc: { en: 'List active containers', es: 'Listar contenedores activos' }, cmd: (f, s) => `docker ps`, tags: 'ps list active' },
+  { desc: { en: 'Interactive shell (bash)', es: 'Entrar al contenedor (bash)' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} bash`, tags: 'exec shell terminal bash' },
+  { desc: { en: 'View logs (real-time)', es: 'Ver logs en vivo' }, cmd: (f, s) => `docker compose -f ${f} logs -f ${s}`, tags: 'logs tail follow' },
+  { desc: { en: 'Prune everything', es: 'Limpieza profunda del sistema' }, cmd: (f, s) => `docker system prune -a --volumes`, tags: 'prune clean clear delete' }
+];
+
+const dockerSearchInput = document.getElementById('docker-search');
+const dockerLibraryGrid = document.getElementById('docker-library-grid');
+
+const renderDockerLibrary = (filter = '') => {
+  const file = dockerFileInput.value.trim() || 'docker-compose.dev.yml';
+  const svc = dockerServiceInput.value.trim() || 'api';
+
+  const filtered = DOCKER_LIBRARY.filter(item => 
+    item.desc.en.toLowerCase().includes(filter.toLowerCase()) || 
+    item.desc.es.toLowerCase().includes(filter.toLowerCase()) || 
+    item.tags.toLowerCase().includes(filter.toLowerCase())
+  );
+
+  dockerLibraryGrid.innerHTML = filtered.map(item => {
+    const finalCmd = typeof item.cmd === 'function' ? item.cmd(file, svc) : item.cmd;
+    return `
+      <div class="library-card">
+        <div class="cmd-desc">${item.desc[currentLang]}</div>
+        <div class="cmd-val" onclick="copyToClipboard('${finalCmd}', this)">
+          <span>${finalCmd.length > 35 ? finalCmd.substring(0, 32) + '...' : finalCmd}</span>
+          <i data-lucide="copy" style="width: 12px; height: 12px;"></i>
+        </div>
+      </div>
+    `;
+  }).join('');
+  if (window.lucide) window.lucide.createIcons();
+};
+
+dockerSearchInput.addEventListener('input', (e) => {
+  renderDockerLibrary(e.target.value);
+});
+
+// Initial Library Render
+renderDockerLibrary();
+
 updateTranslations();
