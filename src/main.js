@@ -10,6 +10,7 @@ const translations = {
     lblBase: 'Base Branch',
     lblType: 'Task Type',
     lblTarget: 'Target Branch',
+    lblCommit: 'Commit Message',
     lblWorkflow: 'Workflow Commands',
     btnCopy: 'Copy',
     btnCopySeq: 'Copy Sequence',
@@ -35,6 +36,7 @@ const translations = {
     lblBase: 'Rama Base',
     lblType: 'Tipo de Tarea',
     lblTarget: 'Rama Generada',
+    lblCommit: 'Mensaje de Commit',
     lblWorkflow: 'Comandos del Flujo',
     btnCopy: 'Copiar',
     btnCopySeq: 'Copiar Secuencia',
@@ -75,6 +77,7 @@ const taskTitleInput = document.getElementById('task-title');
 const typeButtons = document.querySelectorAll('.type-btn');
 const outputSection = document.getElementById('output-section');
 const branchNameInput = document.getElementById('branch-name-input');
+const commitMsgInput = document.getElementById('commit-msg-input');
 const commandListContainer = document.getElementById('command-list');
 const copyBranchBtn = document.getElementById('copy-branch');
 const copyAllBtn = document.getElementById('copy-all');
@@ -86,6 +89,7 @@ const langBtn = document.getElementById('lang-btn');
 let currentType = 'feature';
 let currentWorkflow = 'new';
 let isManualBranch = false;
+let isManualCommit = false;
 
 const updateTranslations = () => {
   const t = translations[currentLang];
@@ -95,6 +99,7 @@ const updateTranslations = () => {
   document.getElementById('btn-wf-recreate').textContent = t.wfRecreate;
   document.getElementById('lbl-task-type').textContent = t.lblType;
   document.getElementById('lbl-target-branch').textContent = t.lblTarget;
+  document.getElementById('lbl-commit-msg').textContent = t.lblCommit;
   document.getElementById('lbl-workflow-cmds').textContent = t.lblWorkflow;
   document.getElementById('copy-branch').textContent = t.btnCopy;
   document.getElementById('copy-all').textContent = t.btnCopySeq;
@@ -163,36 +168,48 @@ const updateUI = () => {
     outputSection.classList.add('visible');
     
     if (!isManualBranch) {
-      const generated = (title.includes('/') || currentWorkflow === 'recreate') 
+      const generatedBranch = (title.includes('/') || currentWorkflow === 'recreate') 
         ? title 
         : `${currentType}/${slugify(title)}`;
-      branchNameInput.value = generated;
+      branchNameInput.value = generatedBranch;
+    }
+
+    if (!isManualCommit) {
+      const cleanTitle = title.replace(/\[.*?\]/g, '').replace(/\b(frontend|backend|fe|be|front|back)\b/gi, '').trim();
+      const issueMatch = title.match(/#(\d+)/);
+      const commitPrefix = issueMatch ? `#${issueMatch[1]} - ` : '';
+      commitMsgInput.value = `${currentType}: ${commitPrefix}${cleanTitle}`;
+      autoResizeCommit();
     }
     
-    renderCommands(branchNameInput.value, title);
+    renderCommands(branchNameInput.value, commitMsgInput.value);
   } else {
     outputSection.classList.remove('visible');
-    isManualBranch = false; // Reset when cleared
+    isManualBranch = false;
+    isManualCommit = false;
   }
+};
+
+const autoResizeCommit = () => {
+  commitMsgInput.style.height = 'auto';
+  commitMsgInput.style.height = commitMsgInput.scrollHeight + 'px';
 };
 
 branchNameInput.addEventListener('input', () => {
   isManualBranch = true;
-  renderCommands(branchNameInput.value, taskTitleInput.value.trim());
+  renderCommands(branchNameInput.value, commitMsgInput.value);
 });
 
-const renderCommands = (branch, originalTitle) => {
+commitMsgInput.addEventListener('input', () => {
+  isManualCommit = true;
+  autoResizeCommit();
+  renderCommands(branchNameInput.value, commitMsgInput.value);
+});
+
+const renderCommands = (branch, commitMsg) => {
   const base = baseBranchInput.value.trim();
   const t = translations[currentLang];
   
-  const cleanCommitTitle = originalTitle
-    .replace(/\[.*?\]/g, '')
-    .replace(/\b(frontend|backend|fe|be|front|back)\b/gi, '')
-    .trim();
-
-  const issueMatch = originalTitle.match(/#(\d+)/);
-  const commitPrefix = issueMatch ? `#${issueMatch[1]} - ` : '';
-
   let commands = [];
   if (currentWorkflow === 'new') {
     if (base && base.toLowerCase() !== 'current') {
@@ -201,7 +218,7 @@ const renderCommands = (branch, originalTitle) => {
     commands.push(
       { label: t.cmdCreate, cmd: `git checkout -b ${branch}` },
       { label: t.cmdStage, cmd: `git add .` },
-      { label: t.cmdCommit, cmd: `git commit -m "${currentType}: ${commitPrefix}${cleanCommitTitle}"` },
+      { label: t.cmdCommit, cmd: `git commit -m "${commitMsg}"` },
       { label: t.cmdPush, cmd: `git push origin ${branch}` }
     );
   } else {
