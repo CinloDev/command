@@ -690,11 +690,11 @@ workflowButtons.forEach(btn => {
     currentWorkflow = btn.dataset.wf;
     
     if (currentWorkflow === 'recreate') {
-      baseBranchGroup.style.display = 'block';
+      baseBranchGroup.style.display = 'flex';
       document.querySelector('.task-types').style.display = 'none';
       document.getElementById('lbl-task-type').style.display = 'none';
     } else {
-      baseBranchGroup.style.display = 'block';
+      baseBranchGroup.style.display = 'flex';
       document.querySelector('.task-types').style.display = 'flex';
       document.getElementById('lbl-task-type').style.display = 'block';
     }
@@ -735,8 +735,9 @@ navItems.forEach(item => {
     
     // Update Theme and Title/Subtitle
     document.body.className = module === 'git' ? 'theme-git' : `theme-${module}`;
+    // INITIALIZE
     updateTranslations();
-    
+    updateUI();
     if (window.lucide) window.lucide.createIcons();
     if (module === 'docker') renderDockerLibrary();
     if (module === 'node') renderNodeCommands();

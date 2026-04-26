@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="/src/style.css">
   </head>
-  <body>
+  <body class="theme-git">
     <div id="toast-container"></div>
     <div class="container">
       <header>
@@ -46,7 +46,7 @@
         </div>
 
         <div class="input-row">
-          <div class="input-group" style="flex: 2; position: relative;">
+          <div class="input-group">
             <label class="input-label" for="task-title">Task Title / Branch</label>
             <div style="position: relative;">
               <input type="text" id="task-title" placeholder="e.g. Add user authentication flow" autocomplete="off" style="padding-right: 50px;">
@@ -55,7 +55,7 @@
               </button>
             </div>
           </div>
-          <div class="input-group" id="base-branch-group" style="flex: 1; display: none;">
+          <div class="input-group" id="base-branch-group">
             <label class="input-label" for="base-branch">Base Branch</label>
             <input type="text" id="base-branch" value="dev" autocomplete="off">
           </div>
@@ -143,11 +143,11 @@
           </div>
 
           <div class="input-row">
-            <div class="input-group" style="flex: 2;">
+            <div class="input-group">
               <label class="input-label" id="lbl-node-install">Install Packages</label>
               <input type="text" id="node-pkg-input" placeholder="e.g. lodash axios express" autocomplete="off">
             </div>
-            <div class="input-group" style="flex: 1;">
+            <div class="input-group">
               <label class="input-label" id="lbl-node-type">Type</label>
               <div class="workflow-selector" style="margin-bottom: 0;">
                 <button class="node-type-btn active" data-type="std">Prod</button>
@@ -189,22 +189,22 @@
 
         <div id="module-docker" class="module-content">
           <div class="input-row">
-            <div class="input-group" style="flex: 1.5;">
+            <div class="input-group">
               <label class="input-label" id="lbl-docker-img">Image Name</label>
               <input type="text" id="docker-img-input" placeholder="e.g. my-app:latest" autocomplete="off">
             </div>
-            <div class="input-group" style="flex: 1;">
+            <div class="input-group">
               <label class="input-label" id="lbl-docker-port">Ports</label>
               <input type="text" id="docker-port-input" placeholder="e.g. 8080:80" autocomplete="off">
             </div>
           </div>
 
           <div class="input-row">
-            <div class="input-group" style="flex: 1;">
+            <div class="input-group">
               <label class="input-label" id="lbl-docker-service">Service Name</label>
               <input type="text" id="docker-service-input" value="api" placeholder="e.g. api, app, web" autocomplete="off">
             </div>
-            <div class="input-group" style="flex: 1.5;">
+            <div class="input-group">
               <label class="input-label" id="lbl-docker-file">Compose File</label>
               <input type="text" id="docker-file-input" value="docker-compose.dev.yml" placeholder="e.g. docker-compose.yml" autocomplete="off">
             </div>
