@@ -159,6 +159,7 @@ header p {
   font-size: 1.1rem;
 }
 
+
 .task-history {
   display: none;
   gap: 10px;
@@ -975,6 +976,7 @@ body:not([class*="theme-"]) .task-history {
     overflow-x: auto;
     justify-content: flex-start;
   }
+
 
   .nav-item span {
     display: none;
