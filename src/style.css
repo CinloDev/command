@@ -945,8 +945,8 @@ body:not([class*="theme-"]) .task-history {
 }
 
 @media (max-width: 850px) {
-  body {
-    padding: 20px 15px;
+  .container {
+    padding: 20px 10px; /* Reducción de márgenes externos */
   }
 
   header {
@@ -986,7 +986,7 @@ body:not([class*="theme-"]) .task-history {
   }
 
   .task-deck {
-    padding: 20px;
+    padding: 15px;
     border-radius: 16px;
     overflow: visible !important;
   }
