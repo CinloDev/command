@@ -923,23 +923,24 @@ dockerActionBtns.forEach(btn => {
 
 // DOCKER LIBRARY DATA (Templates)
 const DOCKER_LIBRARY = [
-  // Compose Basics
-  { desc: { en: 'Stop containers (keep them)', es: 'Parar contenedores (sin borrarlos)' }, cmd: (f, s) => `docker compose -f ${f} stop`, tags: 'stop compose pause' },
-  { desc: { en: 'Start existing containers', es: 'Iniciar contenedores detenidos' }, cmd: (f, s) => `docker compose -f ${f} start`, tags: 'start compose' },
+  // Laravel & Cache
+  { desc: { en: 'Artisan: Clear ALL Cache', es: 'Artisan: Limpiar TODA la caché' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} php artisan config:clear && docker compose -f ${f} exec ${s} php artisan cache:clear && docker compose -f ${f} exec ${s} php artisan route:clear && docker compose -f ${f} exec ${s} php artisan view:clear`, tags: 'laravel artisan cache clear' },
+  { desc: { en: 'Artisan: Config Clear', es: 'Artisan: Limpiar Config' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} php artisan config:clear`, tags: 'laravel artisan config' },
+  { desc: { en: 'Check Email Env', es: 'Ver Envs de Email' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} printenv | grep MAIL_`, tags: 'env mail email' },
+  
+  // Docker Management
+  { desc: { en: 'Restart Service', es: 'Reiniciar Servicio' }, cmd: (f, s) => `docker compose -f ${f} restart ${s}`, tags: 'restart service' },
+  { desc: { en: 'Rebuild & Up', es: 'Reconstruir y Levantar' }, cmd: (f, s) => `docker compose -f ${f} down && docker compose -f ${f} up -d --build`, tags: 'rebuild build up' },
   { desc: { en: 'Down (delete containers/networks)', es: 'Bajar docker (elimina todo)' }, cmd: (f, s) => `docker compose -f ${f} down`, tags: 'down delete remove' },
   { desc: { en: 'Up -d (create and start)', es: 'Levantar docker (background)' }, cmd: (f, s) => `docker compose -f ${f} up -d`, tags: 'up start background' },
   
-  // Laravel / Artisan (Your notes)
+  // Artisan Standard
   { desc: { en: 'Artisan: Migrate', es: 'Artisan: Correr migraciones' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} php artisan migrate`, tags: 'laravel artisan migrate php' },
   { desc: { en: 'Artisan: Fresh + Seed', es: 'Artisan: Reset completo + Seed' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} php artisan migrate:fresh --seed`, tags: 'laravel artisan fresh seed php' },
   { desc: { en: 'Artisan: DB Seed', es: 'Artisan: Cargar seeders' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} php artisan db:seed`, tags: 'laravel artisan seed php' },
   { desc: { en: 'Artisan: Tinker', es: 'Artisan: Entrar a Tinker' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} php artisan tinker`, tags: 'laravel artisan tinker php' },
-  { desc: { en: 'Artisan: Make Seeder', es: 'Artisan: Crear nuevo seeder' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} php artisan make:seeder NewSeeder`, tags: 'laravel artisan make seeder php' },
-  { desc: { en: 'Artisan: List Routes', es: 'Artisan: Listar rutas' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} php artisan route:list`, tags: 'laravel artisan route list' },
   
   // System
-  { desc: { en: 'Check if Docker is active', es: 'Verificar si Docker está activo' }, cmd: (f, s) => `docker info`, tags: 'info status check' },
-  { desc: { en: 'List active containers', es: 'Listar contenedores activos' }, cmd: (f, s) => `docker ps`, tags: 'ps list active' },
   { desc: { en: 'Interactive shell (bash)', es: 'Entrar al contenedor (bash)' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} bash`, tags: 'exec shell terminal bash' },
   { desc: { en: 'View logs (real-time)', es: 'Ver logs en vivo' }, cmd: (f, s) => `docker compose -f ${f} logs -f ${s}`, tags: 'logs tail follow' },
   { desc: { en: 'Prune everything', es: 'Limpieza profunda del sistema' }, cmd: (f, s) => `docker system prune -a --volumes`, tags: 'prune clean clear delete' }
