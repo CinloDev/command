@@ -3,7 +3,9 @@ import './style.css'
 const translations = {
   en: {
     title: 'Command Center',
-    subtitle: 'Transform tasks into git workflows instantly',
+    subtitleGit: 'Transform tasks into git workflows instantly',
+    subtitleNode: 'Manage packages and scripts without memorizing commands',
+    subtitleDocker: 'Spin up containers and services with a single click',
     wfNew: 'New Branch',
     wfRecreate: 'Recreate Branch',
     lblTask: 'Task Title / Branch',
@@ -40,11 +42,28 @@ const translations = {
     dockerVault: 'Docker Vault (Cheat Sheet)',
     dockerSearch: 'Search command...',
     dockerService: 'Service Name',
-    dockerFile: 'Compose File'
+    dockerFile: 'Compose File',
+    lblFullPreview: 'Full Workflow Preview',
+    lblGitVault: 'Git Vault (Quick Actions)',
+    lblNodeVault: 'Node Vault (Toolbox)',
+    searchPlaceholder: 'Search commands...',
+    warningLong: 'Branch name is quite long!',
+    warningChars: 'The branch contains unusual characters.',
+    btnReset: 'Reset to auto',
+    listView: 'List View',
+    terminalView: 'Terminal View',
+    typeFeature: 'Feature',
+    typeFix: 'Fix',
+    typeHotfix: 'Hotfix',
+    typeChore: 'Chore',
+    typeDocs: 'Docs',
+    typeRefactor: 'Refactor'
   },
   es: {
     title: 'Centro de Mandos',
-    subtitle: 'Transforma tareas en flujos de git al instante',
+    subtitleGit: 'Transforma tareas en flujos de git al instante',
+    subtitleNode: 'Gestiona paquetes y scripts sin memorizar comandos',
+    subtitleDocker: 'Levanta contenedores y servicios con un solo clic',
     wfNew: 'Nueva Rama',
     wfRecreate: 'Recrear Rama',
     lblTask: 'Título de Tarea / Rama',
@@ -61,11 +80,11 @@ const translations = {
     cmdCommit: 'Confirmar Tarea (Commit)',
     cmdPush: 'Subir a Origin',
     cmdExit: 'Salir de la Rama',
-    cmdDelete: 'Borrar Local',
-    cmdDeleteRemote: 'Borrar en Remoto',
-    cmdPull: 'Bajar lo último',
+    cmdDelete: 'Borrar Rama Local',
+    cmdDeleteRemote: 'Borrar Rama Remota',
+    cmdPull: 'Bajar cambios (Pull)',
     cmdRecreate: 'Recrear Rama',
-    cmdPushNew: 'Subir Rama Limpia',
+    cmdPushNew: 'Subir nueva rama',
     cmdSync: 'Sincronización Pro',
     manualNotice: 'Modo manual: El tipo de tarea solo afecta al commit',
     nodeMgr: 'Gestor de Paquetes',
@@ -81,7 +100,22 @@ const translations = {
     dockerVault: 'Bóveda de Docker (Guía Rápida)',
     dockerSearch: 'Buscar comando...',
     dockerService: 'Nombre del Servicio',
-    dockerFile: 'Archivo Compose'
+    dockerFile: 'Archivo Compose',
+    lblFullPreview: 'Vista Previa del Flujo Completo',
+    lblGitVault: 'Bóveda de Git (Acciones Rápidas)',
+    lblNodeVault: 'Bóveda de Node (Herramientas)',
+    searchPlaceholder: 'Buscar comandos...',
+    warningLong: '¡La rama es muy larga!',
+    warningChars: 'La rama contiene caracteres inusuales.',
+    btnReset: 'Volver a automático',
+    listView: 'Vista Lista',
+    terminalView: 'Modo Terminal',
+    typeFeature: 'Feature',
+    typeFix: 'Fix',
+    typeHotfix: 'Hotfix',
+    typeChore: 'Chore',
+    typeDocs: 'Docs',
+    typeRefactor: 'Refactor'
   }
 };
 
@@ -118,25 +152,55 @@ const langBtn = document.getElementById('lang-btn');
 const translateBtn = document.getElementById('translate-btn');
 const resetBranchBtn = document.getElementById('reset-branch');
 const manualNotice = document.getElementById('manual-notice');
+const toastContainer = document.getElementById('toast-container');
+const fullCommandText = document.getElementById('full-command-text');
+const copyTerminalBtn = document.getElementById('copy-terminal');
+const taskHistoryContainer = document.getElementById('task-history');
+const branchWarning = document.getElementById('branch-warning');
+const toggleTerminalBtn = document.getElementById('toggle-terminal-mode');
+
+// Safety check for search inputs
+const dockerSearchInput = document.getElementById('docker-search');
+const gitSearchInput = document.getElementById('git-search');
+const nodeSearchInput = document.getElementById('node-search');
+
+// Docker Inputs
+const dockerServiceInput = document.getElementById('docker-service-input');
+const dockerFileInput = document.getElementById('docker-file-input');
+const dockerLibraryGrid = document.getElementById('docker-library-grid');
+const dockerImgInput = document.getElementById('docker-img-input');
+const dockerPortInput = document.getElementById('docker-port-input');
+const dockerActionBtns = document.querySelectorAll('.docker-action-btn');
+const dockerCommandList = document.getElementById('docker-command-list');
+const dockerOutput = document.getElementById('docker-output');
+
+let taskHistory = JSON.parse(localStorage.getItem('taskHistory')) || [];
+let isTerminalMode = false;
 
 let currentType = 'feature';
 let currentWorkflow = 'new';
 let isManualBranch = false;
 let isManualCommit = false;
+let currentActiveModule = 'git';
 
 const updateTranslations = () => {
   const t = translations[currentLang];
   document.getElementById('txt-title').textContent = t.title;
-  document.getElementById('txt-subtitle').textContent = t.subtitle;
-  document.getElementById('btn-wf-new').textContent = t.wfNew;
-  document.getElementById('btn-wf-recreate').textContent = t.wfRecreate;
+  const subtitleKey = 'subtitle' + currentActiveModule.charAt(0).toUpperCase() + currentActiveModule.slice(1);
+  document.getElementById('txt-subtitle').textContent = t[subtitleKey] || t.subtitleGit;
+  document.querySelector('#btn-wf-new span').textContent = t.wfNew;
+  document.querySelector('#btn-wf-recreate span').textContent = t.wfRecreate;
   document.getElementById('lbl-task-type').textContent = t.lblType;
   document.getElementById('lbl-target-branch').textContent = t.lblTarget;
   document.getElementById('lbl-commit-msg').textContent = t.lblCommit;
   document.getElementById('lbl-workflow-cmds').textContent = t.lblWorkflow;
-  document.getElementById('copy-branch').textContent = t.btnCopy;
-  document.getElementById('copy-all').textContent = t.btnCopySeq;
-  manualNotice.textContent = t.manualNotice;
+  document.getElementById('lbl-full-preview').textContent = t.lblFullPreview;
+  document.getElementById('lbl-git-vault').textContent = t.lblGitVault;
+  document.getElementById('lbl-node-vault').textContent = t.lblNodeVault;
+  if (toggleTerminalBtn) {
+    toggleTerminalBtn.querySelector('span').textContent = isTerminalMode ? t.listView : t.terminalView;
+  }
+  if (manualNotice) manualNotice.textContent = t.manualNotice;
 
   // Node Labels
   document.getElementById('lbl-node-manager').textContent = t.nodeMgr;
@@ -154,11 +218,22 @@ const updateTranslations = () => {
   document.getElementById('lbl-docker-vault').textContent = t.dockerVault;
   document.getElementById('lbl-docker-service').textContent = t.dockerService;
   document.getElementById('lbl-docker-file').textContent = t.dockerFile;
-  document.getElementById('docker-search').placeholder = t.dockerSearch;
+  if (dockerSearchInput) dockerSearchInput.placeholder = t.searchPlaceholder;
+  if (gitSearchInput) gitSearchInput.placeholder = t.searchPlaceholder;
+  if (nodeSearchInput) nodeSearchInput.placeholder = t.searchPlaceholder;
+  
+  if (resetBranchBtn) resetBranchBtn.textContent = t.btnReset;
   
   const labels = document.querySelectorAll('.input-label');
   labels[0].textContent = t.lblTask;
   labels[1].textContent = t.lblBase;
+  
+  // Update Type Buttons
+  typeButtons.forEach(btn => {
+    const type = btn.dataset.type;
+    const key = 'type' + type.charAt(0).toUpperCase() + type.slice(1);
+    btn.textContent = t[key] || type;
+  });
   
   langBtn.textContent = currentLang.toUpperCase();
   updateUI();
@@ -215,6 +290,8 @@ const slugify = (text) => {
   return parts.join('-') || 'task';
 };
 
+
+
 const translateTitle = async (e) => {
   if (e) e.preventDefault();
   const text = taskTitleInput.value.trim();
@@ -256,11 +333,11 @@ const updateUI = () => {
         ? title 
         : `${currentType}/${slugify(title)}`;
       branchNameInput.value = generatedBranch;
-      resetBranchBtn.style.display = 'none';
-      manualNotice.style.display = 'none';
+      if (resetBranchBtn) resetBranchBtn.style.display = 'none';
+      if (manualNotice) manualNotice.style.display = 'none';
     } else {
-      resetBranchBtn.style.display = 'flex';
-      manualNotice.style.display = 'flex';
+      if (resetBranchBtn) resetBranchBtn.style.display = 'flex';
+      if (manualNotice) manualNotice.style.display = 'flex';
     }
 
     if (!isManualCommit) {
@@ -271,6 +348,18 @@ const updateUI = () => {
       autoResizeCommit();
     }
     
+    // SMART TYPE DETECTION
+    if (!isManualBranch && title.length > 3) {
+      const detected = detectType(title);
+      if (detected !== currentType) {
+        currentType = detected;
+        typeButtons.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.type === currentType);
+        });
+      }
+    }
+
+    validateBranch(branchNameInput.value);
     renderCommands(branchNameInput.value, commitMsgInput.value);
   } else {
     outputSection.classList.remove('visible');
@@ -278,6 +367,27 @@ const updateUI = () => {
     isManualCommit = false;
     resetBranchBtn.style.display = 'none';
     manualNotice.style.display = 'none';
+    branchWarning.style.display = 'none';
+  }
+};
+
+const validateBranch = (name) => {
+  const t = translations[currentLang];
+  let warning = '';
+  
+  if (name.length > 50) {
+    warning = t.warningLong;
+  } else if (/[^\w\d\/\-._]/.test(name)) {
+    warning = t.warningChars;
+  }
+  
+  if (warning) {
+    branchWarning.textContent = warning;
+    branchWarning.style.display = 'flex';
+    branchWarning.innerHTML = `<i data-lucide="alert-triangle" style="width: 14px; height: 14px;"></i> <span>${warning}</span>`;
+    if (window.lucide) window.lucide.createIcons();
+  } else {
+    branchWarning.style.display = 'none';
   }
 };
 
@@ -323,67 +433,119 @@ window.addEventListener('keydown', (e) => {
 });
 
 const renderCommands = (branch, commitMsg) => {
-  const base = baseBranchInput.value.trim();
-  const t = translations[currentLang];
-  
-  let commands = [];
-  if (currentWorkflow === 'new') {
-    if (base && base.toLowerCase() !== 'current') {
-      commands.push({ label: t.cmdExit, cmd: `git checkout ${base} && git pull origin ${base}` });
+  try {
+    const base = baseBranchInput ? baseBranchInput.value.trim() : 'dev';
+    const t = translations[currentLang] || translations.en;
+    const safeBranch = branch || 'task';
+    const safeCommit = commitMsg || `${currentType}: update`;
+    
+    let commands = [];
+    if (currentWorkflow === 'recreate') {
+      commands = [
+        { label: t.cmdExit || 'Exit', cmd: `git checkout ${base || 'dev'}` },
+        { label: t.cmdDelete || 'Delete', cmd: `git branch -D ${safeBranch}` },
+        { label: t.cmdDeleteRemote || 'Delete Remote', cmd: `git push origin --delete ${safeBranch}` },
+        { label: t.cmdPull || 'Pull', cmd: `git pull origin ${base || 'dev'}` },
+        { label: t.cmdRecreate || 'Recreate', cmd: `git checkout -b ${safeBranch}` },
+        { label: t.cmdPushNew || 'Push New', cmd: `git push origin ${safeBranch}` }
+      ];
+    } else {
+      if (base && base.toLowerCase() !== 'current') {
+        commands.push({ label: t.cmdExit || 'Exit', cmd: `git checkout ${base} && git pull origin ${base}` });
+      }
+      commands.push(
+        { label: t.cmdCreate || 'Create', cmd: `git checkout -b ${safeBranch}` },
+        { label: t.cmdStage || 'Stage', cmd: `git add .` },
+        { label: t.cmdCommit || 'Commit', cmd: `git commit -m "${safeCommit}"` },
+        { label: t.cmdPush || 'Push', cmd: `git push origin ${safeBranch}` }
+      );
     }
-    commands.push(
-      { label: t.cmdCreate, cmd: `git checkout -b ${branch}` },
-      { label: t.cmdStage, cmd: `git add .` },
-      { label: t.cmdCommit, cmd: `git commit -m "${commitMsg}"` },
-      { label: t.cmdPush, cmd: `git push origin ${branch}` }
-    );
-  } else {
-    commands = [
-      { label: t.cmdExit, cmd: `git checkout ${base || 'dev'}` },
-      { label: t.cmdDelete, cmd: `git branch -D ${branch}` },
-      { label: t.cmdDeleteRemote, cmd: `git push origin --delete ${branch}` },
-      { label: t.cmdPull, cmd: `git pull origin ${base || 'dev'}` },
-      { label: t.cmdRecreate, cmd: `git checkout -b ${branch}` },
-      { label: t.cmdPushNew, cmd: `git push origin ${branch}` }
-    ];
-  }
 
-  commandListContainer.innerHTML = '';
-  commands.forEach(c => {
-    const card = document.createElement('div');
-    card.className = 'command-card';
-    card.innerHTML = `
-      <div class="command-info">
-        <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 4px;">${c.label}</div>
-        <div class="command-text">${c.cmd}</div>
-      </div>
-      <button class="copy-btn">
-        <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
-      </button>
-    `;
-    card.querySelector('.copy-btn').addEventListener('click', (e) => {
-      copyToClipboard(c.cmd, e.currentTarget);
-    });
-    commandListContainer.appendChild(card);
-  });
-  if (window.lucide) window.lucide.createIcons();
+    if (commandListContainer) {
+      commandListContainer.innerHTML = '';
+      commands.forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'command-card';
+        card.innerHTML = `
+          <div class="command-info">
+            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 4px;">${c.label}</div>
+            <div class="command-text">${c.cmd}</div>
+          </div>
+          <button class="copy-btn">
+            <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
+          </button>
+        `;
+        card.querySelector('.copy-btn').addEventListener('click', (e) => {
+          copyToClipboard(c.cmd, e.currentTarget);
+        });
+        commandListContainer.appendChild(card);
+      });
+    }
+    
+    const fullCmd = commands.map(c => c.cmd).join(' && ');
+    if (fullCommandText) fullCommandText.textContent = fullCmd;
+
+    if (window.lucide) window.lucide.createIcons();
+  } catch (err) {
+    console.error("Critical error in renderCommands:", err);
+  }
+};
+
+const detectType = (text) => {
+  const low = text.toLowerCase();
+  if (/\b(fix|bug|error|corregir|arreglar|falla|issue)\b/i.test(low)) return 'fix';
+  if (/\b(hotfix|urgente|critical|critico)\b/i.test(low)) return 'hotfix';
+  if (/\b(refactor|unificar|unify|reorganize|limpiar|clean)\b/i.test(low)) return 'refactor';
+  if (/\b(docs|documentacion|readme|wiki)\b/i.test(low)) return 'docs';
+  if (/\b(chore|deps|dependency|config|setup|build|npm|yarn)\b/i.test(low)) return 'chore';
+  return 'feature';
 };
 
 window.copyToClipboard = (text, btn) => {
   navigator.clipboard.writeText(text).then(() => {
     const t = translations[currentLang];
+    
+    // Save to history if it's a branch or full command
+    if (text.includes('/') || text.includes('git')) {
+      const title = taskTitleInput.value.trim();
+      if (title) saveToHistory(title, currentType);
+    }
+
+    // Toast Notification
+    showToast(t.copied, 'copy');
+
     const originalContent = btn.innerHTML;
-    btn.textContent = t.copied;
     btn.classList.add('copied');
     setTimeout(() => {
-      btn.innerHTML = originalContent;
       btn.classList.remove('copied');
-      if (window.lucide) window.lucide.createIcons();
     }, 2000);
   });
 };
 
+const showToast = (message, iconType = 'check') => {
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  
+  const iconName = iconType === 'copy' ? 'clipboard-check' : 'check-circle';
+  
+  toast.innerHTML = `
+    <i data-lucide="${iconName}"></i>
+    <span>${message}</span>
+  `;
+  
+  toastContainer.appendChild(toast);
+  if (window.lucide) window.lucide.createIcons();
+  
+  setTimeout(() => {
+    toast.classList.add('removing');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+};
+
+// BORDER REVEAL LOGIC REMOVED
+
 taskTitleInput.addEventListener('input', updateUI);
+commitMsgInput.addEventListener('input', autoResizeCommit);
 typeButtons.forEach(btn => {
   btn.addEventListener('click', () => {
     typeButtons.forEach(b => b.classList.remove('active'));
@@ -393,16 +555,133 @@ typeButtons.forEach(btn => {
   });
 });
 
-copyBranchBtn.addEventListener('click', () => {
-  copyToClipboard(branchNameInput.value, copyBranchBtn);
-});
+if (copyBranchBtn) {
+  copyBranchBtn.addEventListener('click', () => {
+    copyToClipboard(branchNameInput.value, copyBranchBtn);
+  });
+}
 
-copyAllBtn.addEventListener('click', () => {
-  const allCmds = Array.from(document.querySelectorAll('.command-text'))
-    .map(el => el.textContent)
-    .join(' && ');
-  copyToClipboard(allCmds, copyAllBtn);
-});
+if (copyAllBtn) {
+  copyAllBtn.addEventListener('click', () => {
+    const allCmds = Array.from(document.querySelectorAll('.command-text'))
+      .map(el => el.textContent)
+      .join(' && ');
+    copyToClipboard(allCmds, copyAllBtn);
+  });
+}
+
+if (copyTerminalBtn) {
+  copyTerminalBtn.addEventListener('click', () => {
+    copyToClipboard(fullCommandText.textContent, copyTerminalBtn);
+  });
+}
+
+if (toggleTerminalBtn) {
+  toggleTerminalBtn.addEventListener('click', () => {
+    isTerminalMode = !isTerminalMode;
+    toggleTerminalBtn.classList.toggle('active', isTerminalMode);
+    commandListContainer.classList.toggle('terminal-view', isTerminalMode);
+    updateTranslations();
+    renderCommands(branchNameInput.value, commitMsgInput.value);
+  });
+}
+
+// HISTORY LOGIC
+const saveToHistory = (title, type) => {
+  const existing = taskHistory.findIndex(h => h.title === title);
+  if (existing !== -1) taskHistory.splice(existing, 1);
+  
+  taskHistory.unshift({ title, type, date: new Date().toISOString() });
+  taskHistory = taskHistory.slice(0, 5);
+  
+  localStorage.setItem('taskHistory', JSON.stringify(taskHistory));
+  renderHistory();
+};
+
+const renderHistory = () => {
+  if (!taskHistoryContainer) return;
+  taskHistoryContainer.innerHTML = '';
+  
+  taskHistory.forEach(h => {
+    const item = document.createElement('div');
+    item.className = 'history-item';
+    item.innerHTML = `
+      <span class="hist-type">${h.type}</span>
+      <span class="hist-title">${h.title.length > 25 ? h.title.substring(0, 22) + '...' : h.title}</span>
+    `;
+    item.addEventListener('click', () => loadHistoryItem(h.title, h.type));
+    taskHistoryContainer.appendChild(item);
+  });
+};
+
+window.loadHistoryItem = (title, type) => {
+  taskTitleInput.value = title;
+  currentType = type;
+  
+  // First, generate the content as if it were auto
+  isManualBranch = false;
+  isManualCommit = false;
+  updateUI();
+  
+  // THEN, lock it to manual so the user can see it's from history
+  isManualBranch = true;
+  isManualCommit = true;
+
+  typeButtons.forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.type === type);
+  });
+
+  // Final render with the manual flags active
+  renderCommands(branchNameInput.value, commitMsgInput.value);
+  
+  if (resetBranchBtn) resetBranchBtn.style.display = 'flex';
+  if (manualNotice) manualNotice.style.display = 'flex';
+};
+
+// LIBRARIES (VAULTS)
+const GIT_LIBRARY = [
+  { desc: { en: 'Stash: Save changes', es: 'Stash: Guardar cambios' }, cmd: () => `git stash`, tags: 'stash save' },
+  { desc: { en: 'Stash: Pop (apply + remove)', es: 'Stash: Recuperar (pop)' }, cmd: () => `git stash pop`, tags: 'stash pop' },
+  { desc: { en: 'Interactive Rebase (3)', es: 'Rebase Interactivo (3)' }, cmd: () => `git rebase -i HEAD~3`, tags: 'rebase interactive' },
+  { desc: { en: 'Cherry-pick', es: 'Cherry-pick' }, cmd: () => `git cherry-pick <hash>`, tags: 'cherry-pick' },
+  { desc: { en: 'Clean: List dry-run', es: 'Limpiar: Simulacro' }, cmd: () => `git clean -fdn`, tags: 'clean dry' },
+  { desc: { en: 'Delete merged local branches', es: 'Borrar ramas locales mergeadas' }, cmd: () => `git branch --merged | grep -v "\\*" | xargs -n 1 git branch -d`, tags: 'clean branches' }
+];
+
+const NODE_LIBRARY = [
+  { desc: { en: 'Deep Clean (node_modules)', es: 'Limpieza profunda (node_modules)' }, cmd: () => `rm -rf node_modules package-lock.json && npm install`, tags: 'clean reset' },
+  { desc: { en: 'NPM Audit Fix', es: 'Arreglar vulnerabilidades' }, cmd: () => `npm audit fix`, tags: 'audit fix' },
+  { desc: { en: 'Check versions', es: 'Verificar versiones instaladas' }, cmd: () => `npm list --depth=0`, tags: 'list versions' },
+  { desc: { en: 'Outdated packages', es: 'Paquetes desactualizados' }, cmd: () => `npm outdated`, tags: 'outdated' },
+  { desc: { en: 'Initialize TypeScript', es: 'Inicializar TypeScript' }, cmd: () => `npx tsc --init`, tags: 'typescript init' }
+];
+
+const renderLibrary = (module, data, containerId, query = '') => {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  
+  const filtered = data.filter(item => {
+    const q = query.toLowerCase();
+    return item.desc.en.toLowerCase().includes(q) || 
+           item.desc.es.toLowerCase().includes(q) || 
+           item.cmd().toLowerCase().includes(q) || 
+           (item.tags && item.tags.toLowerCase().includes(q));
+  });
+
+  container.innerHTML = filtered.map(item => {
+    const finalCmd = item.cmd();
+    return `
+      <div class="library-card">
+        <div class="cmd-desc">${item.desc[currentLang]}</div>
+        <div class="cmd-val" onclick="copyToClipboard('${finalCmd}', this)">
+          <span>${finalCmd.length > 35 ? finalCmd.substring(0, 32) + '...' : finalCmd}</span>
+          <i data-lucide="copy" style="width: 12px; height: 12px;"></i>
+        </div>
+      </div>
+    `;
+  }).join('');
+  if (window.lucide) window.lucide.createIcons();
+};
 
 workflowButtons.forEach(btn => {
   btn.addEventListener('click', () => {
@@ -432,20 +711,35 @@ const moduleContents = document.querySelectorAll('.module-content');
 navItems.forEach(item => {
   item.addEventListener('click', () => {
     const module = item.dataset.module;
-    
-    // Update Nav
+    const targetModule = document.getElementById(`module-${module}`);
+
+    if (!targetModule || item.classList.contains('active')) return;
+
+    // Update state
+    currentActiveModule = module;
+
+    // Update Nav Buttons
     navItems.forEach(n => n.classList.remove('active'));
     item.classList.add('active');
     
-    // Update Content
-    moduleContents.forEach(m => m.classList.remove('active'));
-    document.getElementById(`module-${module}`).classList.add('active');
+    // Switch Content
+    moduleContents.forEach(m => {
+      m.classList.remove('active');
+      m.style.display = 'none';
+    });
     
-    // Update Theme
-    document.body.className = module === 'git' ? '' : `theme-${module}`;
+    targetModule.style.display = 'block';
+    setTimeout(() => {
+      targetModule.classList.add('active');
+    }, 10);
     
-    // Re-render icons if needed
+    // Update Theme and Title/Subtitle
+    document.body.className = module === 'git' ? 'theme-git' : `theme-${module}`;
+    updateTranslations();
+    
     if (window.lucide) window.lucide.createIcons();
+    if (module === 'docker') renderDockerLibrary();
+    if (module === 'node') renderNodeCommands();
   });
 });
 
@@ -550,14 +844,6 @@ nodeActionBtns.forEach(btn => {
 });
 
 // DOCKER MODULE LOGIC
-const dockerImgInput = document.getElementById('docker-img-input');
-const dockerPortInput = document.getElementById('docker-port-input');
-const dockerServiceInput = document.getElementById('docker-service-input');
-const dockerFileInput = document.getElementById('docker-file-input');
-const dockerActionBtns = document.querySelectorAll('.docker-action-btn');
-const dockerCommandList = document.getElementById('docker-command-list');
-const dockerOutput = document.getElementById('docker-output');
-
 const renderDockerCommands = () => {
   const img = dockerImgInput.value.trim();
   const ports = dockerPortInput.value.trim();
@@ -659,12 +945,10 @@ const DOCKER_LIBRARY = [
   { desc: { en: 'Prune everything', es: 'Limpieza profunda del sistema' }, cmd: (f, s) => `docker system prune -a --volumes`, tags: 'prune clean clear delete' }
 ];
 
-const dockerSearchInput = document.getElementById('docker-search');
-const dockerLibraryGrid = document.getElementById('docker-library-grid');
-
 const renderDockerLibrary = (filter = '') => {
-  const file = dockerFileInput.value.trim() || 'docker-compose.dev.yml';
-  const svc = dockerServiceInput.value.trim() || 'api';
+  if (!dockerLibraryGrid) return;
+  const file = dockerFileInput?.value?.trim() || 'docker-compose.dev.yml';
+  const svc = dockerServiceInput?.value?.trim() || 'api';
 
   const filtered = DOCKER_LIBRARY.filter(item => 
     item.desc.en.toLowerCase().includes(filter.toLowerCase()) || 
@@ -687,11 +971,21 @@ const renderDockerLibrary = (filter = '') => {
   if (window.lucide) window.lucide.createIcons();
 };
 
-dockerSearchInput.addEventListener('input', (e) => {
-  renderDockerLibrary(e.target.value);
-});
-
 // Initial Library Render
 renderDockerLibrary();
+renderLibrary('git', GIT_LIBRARY, 'git-library-grid');
+renderLibrary('node', NODE_LIBRARY, 'node-library-grid');
+renderHistory();
+
+// Search Listeners
+if (dockerSearchInput) {
+  dockerSearchInput.addEventListener('input', (e) => renderDockerLibrary(e.target.value));
+}
+if (gitSearchInput) {
+  gitSearchInput.addEventListener('input', (e) => renderLibrary('git', GIT_LIBRARY, 'git-library-grid', e.target.value));
+}
+if (nodeSearchInput) {
+  nodeSearchInput.addEventListener('input', (e) => renderLibrary('node', NODE_LIBRARY, 'node-library-grid', e.target.value));
+}
 
 updateTranslations();

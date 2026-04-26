@@ -6,8 +6,10 @@
     <title>Command Center | Your Workflow Accelerator</title>
     <meta name="description" content="Generate branch names and git commands instantly from your task titles." />
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="/src/style.css">
   </head>
   <body>
+    <div id="toast-container"></div>
     <div class="container">
       <header>
         <div class="lang-switcher">
@@ -15,6 +17,9 @@
         </div>
         <h1 id="txt-title">Command Center</h1>
         <p id="txt-subtitle">Transform tasks into git workflows instantly</p>
+        <div id="task-history" class="task-history">
+          <!-- History items injected here -->
+        </div>
       </header>
 
       <nav class="top-nav">
@@ -35,8 +40,8 @@
       <main class="task-deck">
         <div id="module-git" class="module-content active">
         <div class="workflow-selector">
-          <button class="wf-btn active" data-wf="new" id="btn-wf-new">New Branch</button>
-          <button class="wf-btn" data-wf="recreate" id="btn-wf-recreate">Recreate Branch</button>
+          <button class="wf-btn active" data-wf="new" id="btn-wf-new"><span>New Branch</span></button>
+          <button class="wf-btn" data-wf="recreate" id="btn-wf-recreate"><span>Recreate Branch</span></button>
         </div>
 
         <div class="input-row">
@@ -68,27 +73,62 @@
         <div id="output-section" class="output-section">
           <label class="input-label" id="lbl-target-branch">Target Branch</label>
           <div class="branch-preview">
-            <input type="text" class="branch-input" id="branch-name-input" spellcheck="false" autocomplete="off">
-            <button class="reset-btn" id="reset-branch" title="Reset to automatic name" style="display: none;">
-              <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
+            <input type="text" class="branch-input" id="branch-name-input" autocomplete="off" spellcheck="false">
+            <button class="copy-btn icon-only" id="copy-branch" title="Copy Branch Name">
+              <i data-lucide="copy" style="width: 16px; height: 16px;"></i>
             </button>
-            <button class="copy-btn" id="copy-branch">Copy</button>
           </div>
-          <div id="manual-notice" class="manual-notice" style="display: none;">
-            Manual mode: Task type only affects commit message
-          </div>
+          <div id="branch-warning" class="input-warning" style="display: none;"></div>
+          <div id="manual-notice" class="manual-notice" style="display: none;"></div>
+          <button id="reset-branch" class="secondary-btn" style="display: none; margin-top: 8px; font-size: 0.8rem; height: 32px;">Reset to auto</button>
 
           <label class="input-label" id="lbl-commit-msg">Commit Message</label>
           <div class="branch-preview">
             <textarea class="branch-input" id="commit-msg-input" spellcheck="false" autocomplete="off" rows="1"></textarea>
           </div>
 
-          <label class="input-label" style="display: flex; justify-content: space-between; align-items: center;">
-            <span id="lbl-workflow-cmds">Workflow Commands</span>
-            <button class="copy-btn" id="copy-all" style="background: rgba(255, 255, 255, 0.05); font-size: 0.7rem;">Copy Sequence</button>
-          </label>
+          <div class="header-with-action">
+            <label class="input-label" id="lbl-workflow-cmds">Workflow Commands</label>
+            <div style="display: flex; gap: 8px;">
+              <button id="toggle-terminal-mode" class="terminal-toggle" title="Terminal View">
+                <i data-lucide="terminal"></i>
+                <span>Terminal View</span>
+              </button>
+              <button class="copy-btn icon-only" id="copy-all" style="background: rgba(255, 255, 255, 0.05); height: 34px; width: 34px;" title="Copy Sequence">
+                <i data-lucide="copy" style="width: 16px; height: 16px;"></i>
+              </button>
+            </div>
+          </div>
           <div class="command-list" id="command-list">
             <!-- Commands will be injected here -->
+          </div>
+
+          <label class="input-label" style="margin-top: 30px;" id="lbl-full-preview">Full Workflow Preview</label>
+          <div class="terminal-preview" id="terminal-preview">
+            <div class="terminal-header">
+              <div class="dots"><span></span><span></span><span></span></div>
+              <div class="terminal-title">bash — workflow.sh</div>
+            </div>
+            <div class="terminal-body">
+              <span class="prompt">$</span>
+              <code id="full-command-text"></code>
+            </div>
+            <button class="copy-btn icon-only" id="copy-terminal" title="Copy Full Sequence">
+              <i data-lucide="copy" style="width: 16px; height: 16px;"></i>
+            </button>
+          </div>
+
+          <div class="docker-library" style="margin-top: 40px;">
+            <div class="library-header">
+              <label class="input-label" id="lbl-git-vault">Git Vault (Quick Actions)</label>
+              <div class="search-box">
+                <i data-lucide="search"></i>
+                <input type="text" id="git-search" placeholder="Search git commands..." autocomplete="off">
+              </div>
+            </div>
+            <div id="git-library-grid" class="library-grid">
+              <!-- Git library injected here -->
+            </div>
           </div>
         </div>
         </div><!-- End module-git -->
@@ -129,6 +169,19 @@
             <label class="input-label" id="lbl-node-output">Generated Commands</label>
             <div class="command-list" id="node-command-list">
               <!-- Node commands injected here -->
+            </div>
+          </div>
+
+          <div class="docker-library" style="margin-top: 40px;">
+            <div class="library-header">
+              <label class="input-label" id="lbl-node-vault">Node Vault (Tools)</label>
+              <div class="search-box">
+                <i data-lucide="search"></i>
+                <input type="text" id="node-search" placeholder="Search node commands..." autocomplete="off">
+              </div>
+            </div>
+            <div id="node-library-grid" class="library-grid">
+              <!-- Node library injected here -->
             </div>
           </div>
         </div><!-- End module-node -->
