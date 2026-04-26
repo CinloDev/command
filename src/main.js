@@ -991,3 +991,4 @@ if (nodeSearchInput) {
 }
 
 updateTranslations();
+if (window.lucide) window.lucide.createIcons();
