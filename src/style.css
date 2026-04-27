@@ -105,7 +105,7 @@ button {
 #glow-follower, .hidden { display: none !important; }
 
 .container {
-  max-width: 800px;
+  max-width: 1100px;
   width: 100%;
   margin: 0 auto;
   min-height: 100vh;
@@ -778,7 +778,7 @@ body:not([class*="theme-"]) .task-history {
 
 .library-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   gap: 15px;
 }
 
@@ -943,6 +943,23 @@ body:not([class*="theme-"]) .task-history {
 
 #base-branch-group {
   display: flex;
+}
+
+@media (min-width: 1400px) {
+  .container {
+    max-width: 1280px;
+  }
+  .task-deck {
+    padding: 60px;
+  }
+}
+
+/* Two-column layout for large screens */
+@media (min-width: 992px) {
+  .library-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
 }
 
 @media (max-width: 850px) {

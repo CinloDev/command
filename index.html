@@ -41,36 +41,36 @@
 
       <main class="task-deck">
         <div id="module-git" class="module-content active">
-        <div class="workflow-selector">
-          <button class="wf-btn active" data-wf="new" id="btn-wf-new"><span>New Branch</span></button>
-          <button class="wf-btn" data-wf="recreate" id="btn-wf-recreate"><span>Recreate Branch</span></button>
-        </div>
-
-        <div class="input-row">
-          <div class="input-group">
-            <label class="input-label" for="task-title">Task Title / Branch</label>
-            <div style="position: relative;">
-              <input type="text" id="task-title" placeholder="e.g. Add user authentication flow" autocomplete="off" style="padding-right: 50px;">
-              <button id="translate-btn" class="translate-trigger" title="Translate Title">
-                <i data-lucide="languages"></i>
-              </button>
+            <div class="workflow-selector">
+              <button class="wf-btn active" data-wf="new" id="btn-wf-new"><span>New Branch</span></button>
+              <button class="wf-btn" data-wf="recreate" id="btn-wf-recreate"><span>Recreate Branch</span></button>
             </div>
-          </div>
-          <div class="input-group" id="base-branch-group">
-            <label class="input-label" for="base-branch">Base Branch</label>
-            <input type="text" id="base-branch" value="dev" autocomplete="off">
-          </div>
-        </div>
 
-        <label class="input-label" id="lbl-task-type">Task Type</label>
-        <div class="task-types" id="task-types">
-          <button class="type-btn active" data-type="feature">Feature</button>
-          <button class="type-btn" data-type="fix">Fix</button>
-          <button class="type-btn" data-type="hotfix">Hotfix</button>
-          <button class="type-btn" data-type="chore">Chore</button>
-          <button class="type-btn" data-type="docs">Docs</button>
-          <button class="type-btn" data-type="refactor">Refactor</button>
-        </div>
+            <div class="input-row">
+              <div class="input-group">
+                <label class="input-label" for="task-title">Task Title / Branch</label>
+                <div style="position: relative;">
+                  <input type="text" id="task-title" placeholder="e.g. Add user authentication flow" autocomplete="off" style="padding-right: 50px;">
+                  <button id="translate-btn" class="translate-trigger" title="Translate Title">
+                    <i data-lucide="languages"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="input-group" id="base-branch-group">
+                <label class="input-label" for="base-branch">Base Branch</label>
+                <input type="text" id="base-branch" value="dev" autocomplete="off">
+              </div>
+            </div>
+
+            <label class="input-label" id="lbl-task-type">Task Type</label>
+            <div class="task-types" id="task-types">
+              <button class="type-btn active" data-type="feature">Feature</button>
+              <button class="type-btn" data-type="fix">Fix</button>
+              <button class="type-btn" data-type="hotfix">Hotfix</button>
+              <button class="type-btn" data-type="chore">Chore</button>
+              <button class="type-btn" data-type="docs">Docs</button>
+              <button class="type-btn" data-type="refactor">Refactor</button>
+            </div>
 
         <div id="output-section" class="output-section">
           <label class="input-label" id="lbl-target-branch">Target Branch</label>
@@ -120,52 +120,60 @@
             </button>
           </div>
 
-          <div class="docker-library" style="margin-top: 40px;">
-            <div class="library-header">
-              <label class="input-label" id="lbl-git-vault">Git Vault (Quick Actions)</label>
-              <div class="search-box">
+        </div><!-- End output-section -->
+
+        <div class="docker-library" style="margin-top: 40px;">
+          <div class="library-header">
+            <label class="input-label" id="lbl-git-vault">Git Vault (Quick Actions)</label>
+            <div style="display: flex; gap: 10px; flex: 1; max-width: 600px;">
+              <div class="search-box" style="max-width: 250px;">
                 <i data-lucide="search"></i>
                 <input type="text" id="git-search" placeholder="Search git commands..." autocomplete="off">
               </div>
-            </div>
-            <div id="git-library-grid" class="library-grid">
-              <!-- Git library injected here -->
-            </div>
-          </div>
-        </div>
-        </div><!-- End module-git -->
-
-        <div id="module-node" class="module-content">
-          <label class="input-label" id="lbl-node-manager">Package Manager</label>
-          <div class="workflow-selector" style="margin-bottom: 24px;">
-            <button class="node-mgr-btn active" data-mgr="npm">NPM</button>
-            <button class="node-mgr-btn" data-mgr="yarn">Yarn</button>
-            <button class="node-mgr-btn" data-mgr="pnpm">PNPM</button>
-          </div>
-
-          <div class="input-row">
-            <div class="input-group">
-              <label class="input-label" id="lbl-node-install">Install Packages</label>
-              <input type="text" id="node-pkg-input" placeholder="e.g. lodash axios express" autocomplete="off">
-            </div>
-            <div class="input-group">
-              <label class="input-label" id="lbl-node-type">Type</label>
-              <div class="workflow-selector" style="margin-bottom: 0;">
-                <button class="node-type-btn active" data-type="std">Prod</button>
-                <button class="node-type-btn" data-type="dev">Dev</button>
-                <button class="node-type-btn" data-type="glob">Global</button>
+              <div class="search-box" style="max-width: 350px;">
+                <i data-lucide="hash"></i>
+                <input type="text" id="git-param" placeholder="External Branch / Hash / Value..." autocomplete="off" style="padding-left: 45px;">
               </div>
             </div>
           </div>
-
-          <label class="input-label" id="lbl-node-quick">Quick NPM Actions</label>
-          <div class="task-types" style="margin-bottom: 30px;">
-            <button class="node-action-btn" data-cmd="npm init -y">Init</button>
-            <button class="node-action-btn" data-cmd="npm install">Install All</button>
-            <button class="node-action-btn" data-cmd="npm audit fix">Audit Fix</button>
-            <button class="node-action-btn" data-cmd="npm version patch">Patch</button>
-            <button class="node-action-btn" data-cmd="npm run dev">Run Dev</button>
+          <div id="git-library-grid" class="library-grid">
+            <!-- Git library injected here -->
           </div>
+        </div>
+
+        </div><!-- End module-git -->
+
+        <div id="module-node" class="module-content">
+            <label class="input-label" id="lbl-node-manager">Package Manager</label>
+            <div class="workflow-selector" style="margin-bottom: 24px;">
+              <button class="node-mgr-btn active" data-mgr="npm">NPM</button>
+              <button class="node-mgr-btn" data-mgr="yarn">Yarn</button>
+              <button class="node-mgr-btn" data-mgr="pnpm">PNPM</button>
+            </div>
+
+            <div class="input-row">
+              <div class="input-group">
+                <label class="input-label" id="lbl-node-install">Install Packages</label>
+                <input type="text" id="node-pkg-input" placeholder="e.g. lodash axios express" autocomplete="off">
+              </div>
+              <div class="input-group">
+                <label class="input-label" id="lbl-node-type">Type</label>
+                <div class="workflow-selector" style="margin-bottom: 0;">
+                  <button class="node-type-btn active" data-type="std">Prod</button>
+                  <button class="node-type-btn" data-type="dev">Dev</button>
+                  <button class="node-type-btn" data-type="glob">Global</button>
+                </div>
+              </div>
+            </div>
+
+            <label class="input-label" id="lbl-node-quick">Quick NPM Actions</label>
+            <div class="task-types" style="margin-bottom: 30px;">
+              <button class="node-action-btn" data-cmd="npm init -y">Init</button>
+              <button class="node-action-btn" data-cmd="npm install">Install All</button>
+              <button class="node-action-btn" data-cmd="npm audit fix">Audit Fix</button>
+              <button class="node-action-btn" data-cmd="npm version patch">Patch</button>
+              <button class="node-action-btn" data-cmd="npm run dev">Run Dev</button>
+            </div>
 
           <div id="node-output" class="output-section">
             <label class="input-label" id="lbl-node-output">Generated Commands</label>
@@ -189,41 +197,41 @@
         </div><!-- End module-node -->
 
         <div id="module-docker" class="module-content">
-          <div class="input-row">
-            <div class="input-group">
-              <label class="input-label" id="lbl-docker-img">Image Name</label>
-              <input type="text" id="docker-img-input" placeholder="e.g. my-app:latest" autocomplete="off">
+            <div class="input-row">
+              <div class="input-group">
+                <label class="input-label" id="lbl-docker-img">Image Name</label>
+                <input type="text" id="docker-img-input" placeholder="e.g. my-app:latest" autocomplete="off">
+              </div>
+              <div class="input-group">
+                <label class="input-label" id="lbl-docker-port">Ports</label>
+                <input type="text" id="docker-port-input" placeholder="e.g. 8080:80" autocomplete="off">
+              </div>
             </div>
-            <div class="input-group">
-              <label class="input-label" id="lbl-docker-port">Ports</label>
-              <input type="text" id="docker-port-input" placeholder="e.g. 8080:80" autocomplete="off">
-            </div>
-          </div>
 
-          <div class="input-row">
-            <div class="input-group">
-              <label class="input-label" id="lbl-docker-service">Service Name</label>
-              <input type="text" id="docker-service-input" value="api" placeholder="e.g. api, app, web" autocomplete="off">
+            <div class="input-row">
+              <div class="input-group">
+                <label class="input-label" id="lbl-docker-service">Service Name</label>
+                <input type="text" id="docker-service-input" value="api" placeholder="e.g. api, app, web" autocomplete="off">
+              </div>
+              <div class="input-group">
+                <label class="input-label" id="lbl-docker-file">Compose File</label>
+                <input type="text" id="docker-file-input" value="docker-compose.dev.yml" placeholder="e.g. docker-compose.yml" autocomplete="off">
+              </div>
             </div>
-            <div class="input-group">
-              <label class="input-label" id="lbl-docker-file">Compose File</label>
-              <input type="text" id="docker-file-input" value="docker-compose.dev.yml" placeholder="e.g. docker-compose.yml" autocomplete="off">
+
+            <label class="input-label" id="lbl-docker-compose">Docker Compose</label>
+            <div class="task-types" style="margin-bottom: 24px;">
+              <button class="docker-action-btn" data-cmd="docker-compose up -d">Compose Up</button>
+              <button class="docker-action-btn" data-cmd="docker-compose down">Compose Down</button>
+              <button class="docker-action-btn" data-cmd="docker-compose restart">Restart</button>
             </div>
-          </div>
 
-          <label class="input-label" id="lbl-docker-compose">Docker Compose</label>
-          <div class="task-types" style="margin-bottom: 24px;">
-            <button class="docker-action-btn" data-cmd="docker-compose up -d">Compose Up</button>
-            <button class="docker-action-btn" data-cmd="docker-compose down">Compose Down</button>
-            <button class="docker-action-btn" data-cmd="docker-compose restart">Restart</button>
-          </div>
-
-          <label class="input-label" id="lbl-docker-quick">Quick Management</label>
-          <div class="task-types" style="margin-bottom: 30px;">
-            <button class="docker-action-btn" data-cmd="docker ps">List Running</button>
-            <button class="docker-action-btn" data-cmd="docker images">List Images</button>
-            <button class="docker-action-btn" data-cmd="docker system prune -a --volumes">Deep Clean</button>
-          </div>
+            <label class="input-label" id="lbl-docker-quick">Quick Management</label>
+            <div class="task-types" style="margin-bottom: 30px;">
+              <button class="docker-action-btn" data-cmd="docker ps">List Running</button>
+              <button class="docker-action-btn" data-cmd="docker images">List Images</button>
+              <button class="docker-action-btn" data-cmd="docker system prune -a --volumes">Deep Clean</button>
+            </div>
 
           <div id="docker-output" class="output-section">
             <label class="input-label" id="lbl-docker-output">Generated Commands</label>

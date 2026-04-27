@@ -163,6 +163,7 @@ const toggleTerminalBtn = document.getElementById('toggle-terminal-mode');
 const dockerSearchInput = document.getElementById('docker-search');
 const gitSearchInput = document.getElementById('git-search');
 const nodeSearchInput = document.getElementById('node-search');
+const gitParamInput = document.getElementById('git-param');
 
 // Docker Inputs
 const dockerServiceInput = document.getElementById('docker-service-input');
@@ -361,6 +362,7 @@ const updateUI = () => {
 
     validateBranch(branchNameInput.value);
     renderCommands(branchNameInput.value, commitMsgInput.value);
+    renderLibrary('git', GIT_LIBRARY, 'git-library-grid', gitSearchInput.value);
   } else {
     outputSection.classList.remove('visible');
     isManualBranch = false;
@@ -642,10 +644,19 @@ window.loadHistoryItem = (title, type) => {
 const GIT_LIBRARY = [
   { desc: { en: 'Stash: Save changes', es: 'Stash: Guardar cambios' }, cmd: () => `git stash`, tags: 'stash save' },
   { desc: { en: 'Stash: Pop (apply + remove)', es: 'Stash: Recuperar (pop)' }, cmd: () => `git stash pop`, tags: 'stash pop' },
-  { desc: { en: 'Interactive Rebase (3)', es: 'Rebase Interactivo (3)' }, cmd: () => `git rebase -i HEAD~3`, tags: 'rebase interactive' },
-  { desc: { en: 'Cherry-pick', es: 'Cherry-pick' }, cmd: () => `git cherry-pick <hash>`, tags: 'cherry-pick' },
+  { desc: { en: 'Amend: Update last commit', es: 'Amend: Actualizar último commit' }, cmd: () => `git commit --amend --no-edit`, tags: 'amend last commit' },
+  { desc: { en: 'Switch to previous branch', es: 'Volver a la rama anterior' }, cmd: () => `git checkout -`, tags: 'checkout switch back' },
+  { desc: { en: 'Fetch & Prune', es: 'Sincronizar y limpiar (Prune)' }, cmd: () => `git fetch --all --prune`, tags: 'fetch prune sync' },
+  { desc: { en: 'Rebase from branch', es: 'Rebase desde rama' }, cmd: (val) => `git rebase ${val || baseBranchInput.value || 'dev'}`, placeholder: 'branch', tags: 'rebase' },
+  { desc: { en: 'Interactive Rebase', es: 'Rebase Interactivo' }, cmd: (val) => `git rebase -i ${val || 'HEAD~3'}`, placeholder: 'target', tags: 'rebase interactive' },
+  { desc: { en: 'Cherry-pick', es: 'Cherry-pick' }, cmd: (val) => `git cherry-pick ${val || '<hash>'}`, placeholder: 'hash', tags: 'cherry-pick' },
+  { desc: { en: 'Checkout Branch', es: 'Ir a rama' }, cmd: (val) => `git checkout ${val || branchNameInput.value || '<branch>'}`, placeholder: 'branch', tags: 'checkout branch' },
+  { desc: { en: 'Merge branch into current', es: 'Merge de rama a actual' }, cmd: (val) => `git merge ${val || baseBranchInput.value || '<branch>'}`, placeholder: 'branch', tags: 'merge branch' },
   { desc: { en: 'Clean: List dry-run', es: 'Limpiar: Simulacro' }, cmd: () => `git clean -fdn`, tags: 'clean dry' },
-  { desc: { en: 'Delete merged local branches', es: 'Borrar ramas locales mergeadas' }, cmd: () => `git branch --merged | grep -v "\\*" | xargs -n 1 git branch -d`, tags: 'clean branches' }
+  { desc: { en: 'Delete merged local branches', es: 'Borrar ramas locales mergeadas' }, cmd: (val) => `git branch --merged ${val || baseBranchInput.value || 'dev'} | grep -v "\\*" | xargs -n 1 git branch -d`, tags: 'clean branches' },
+  { desc: { en: 'Log: Visual Graph', es: 'Log: Gráfico visual' }, cmd: () => `git log --oneline --graph --all`, tags: 'log graph' },
+  { desc: { en: 'Log: Search by message', es: 'Log: Buscar por mensaje' }, cmd: (val) => `git log --oneline --grep="${val || 'pattern'}"`, placeholder: 'pattern', tags: 'log search grep' },
+  { desc: { en: 'Log: Filter by author', es: 'Log: Filtrar por autor' }, cmd: (val) => `git log --oneline --author="${val || 'name'}"`, placeholder: 'author', tags: 'log author' }
 ];
 
 const NODE_LIBRARY = [
@@ -660,26 +671,37 @@ const renderLibrary = (module, data, containerId, query = '') => {
   const container = document.getElementById(containerId);
   if (!container) return;
   
+  const globalParam = (module === 'git' && gitParamInput) ? gitParamInput.value : '';
+  
   const filtered = data.filter(item => {
     const q = query.toLowerCase();
     return item.desc.en.toLowerCase().includes(q) || 
            item.desc.es.toLowerCase().includes(q) || 
-           item.cmd().toLowerCase().includes(q) || 
+           (typeof item.cmd === 'function' ? item.cmd(globalParam).toLowerCase().includes(q) : item.cmd.toLowerCase().includes(q)) || 
            (item.tags && item.tags.toLowerCase().includes(q));
   });
 
-  container.innerHTML = filtered.map(item => {
-    const finalCmd = item.cmd();
-    return `
-      <div class="library-card">
-        <div class="cmd-desc">${item.desc[currentLang]}</div>
-        <div class="cmd-val" onclick="copyToClipboard('${finalCmd}', this)">
-          <span>${finalCmd.length > 35 ? finalCmd.substring(0, 32) + '...' : finalCmd}</span>
-          <i data-lucide="copy" style="width: 12px; height: 12px;"></i>
-        </div>
+  container.innerHTML = '';
+  filtered.forEach((item) => {
+    const card = document.createElement('div');
+    card.className = 'library-card';
+    
+    const finalCmd = item.cmd(globalParam);
+    
+    card.innerHTML = `
+      <div class="cmd-desc">${item.desc[currentLang]}</div>
+      <div class="cmd-val">
+        <span>${finalCmd.length > 35 ? finalCmd.substring(0, 32) + '...' : finalCmd}</span>
+        <i data-lucide="copy" style="width: 12px; height: 12px;"></i>
       </div>
     `;
-  }).join('');
+
+    const cmdVal = card.querySelector('.cmd-val');
+    cmdVal.onclick = () => copyToClipboard(finalCmd, cmdVal);
+    
+    container.appendChild(card);
+  });
+
   if (window.lucide) window.lucide.createIcons();
 };
 
@@ -992,3 +1014,9 @@ if (nodeSearchInput) {
 
 updateTranslations();
 if (window.lucide) window.lucide.createIcons();
+
+if (gitParamInput) {
+  gitParamInput.addEventListener('input', () => {
+    renderLibrary('git', GIT_LIBRARY, 'git-library-grid', gitSearchInput.value);
+  });
+}
