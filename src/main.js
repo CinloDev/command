@@ -251,7 +251,12 @@ const updateUI = () => {
 
     validateBranch(branchNameInput.value);
     renderCommands(branchNameInput.value, commitMsgInput.value);
-    renderLibrary('git', GIT_LIBRARY, 'git-library-grid', gitSearchInput.value);
+    
+    // Refresh vaults and favorites to keep branches in sync
+    if (currentActiveModule === 'git') renderLibrary('git', GIT_LIBRARY, 'git-library-grid', gitSearchInput.value);
+    if (currentActiveModule === 'node') renderLibrary('node', NODE_LIBRARY, 'node-library-grid', nodeSearchInput.value);
+    if (currentActiveModule === 'docker') renderDockerLibrary(dockerSearchInput.value);
+    renderFavorites();
   } else {
     outputSection.classList.remove('visible');
     isManualBranch = false;

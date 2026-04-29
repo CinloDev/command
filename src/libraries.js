@@ -1,4 +1,6 @@
 export const GIT_LIBRARY = [
+  { desc: { en: 'Check Status', es: 'Ver Estado (Status)' }, cmd: () => `git status`, tags: 'status check' },
+  { desc: { en: 'List local branches', es: 'Listar ramas locales' }, cmd: () => `git branch`, tags: 'branch list' },
   { desc: { en: 'Stash: Save changes', es: 'Stash: Guardar cambios' }, cmd: () => `git stash`, tags: 'stash save' },
   { desc: { en: 'Stash: Pop (apply + remove)', es: 'Stash: Recuperar (pop)' }, cmd: () => `git stash pop`, tags: 'stash pop' },
   { desc: { en: 'Amend: Update last commit', es: 'Amend: Actualizar último commit' }, cmd: () => `git commit --amend --no-edit`, tags: 'amend last commit' },
@@ -17,7 +19,9 @@ export const GIT_LIBRARY = [
   { desc: { en: 'Log: Visual Graph', es: 'Log: Gráfico visual' }, cmd: () => `git log --oneline --graph --all`, tags: 'log graph' },
   { desc: { en: 'Log: Search by message', es: 'Log: Buscar por mensaje' }, cmd: (val) => `git log --oneline --grep="${val || 'pattern'}"`, placeholder: 'pattern', tags: 'log search grep' },
   { desc: { en: 'Log: Filter by author', es: 'Log: Filtrar por autor' }, cmd: (val) => `git log --oneline --author="${val || 'name'}"`, placeholder: 'author', tags: 'log author' },
-  { desc: { en: 'Push branch to remote', es: 'Subir rama al remoto' }, cmd: (val, base, branch) => `git push origin ${val || branch || '<branch>'}`, tags: 'push remote branch' }
+  { desc: { en: 'Push branch to remote', es: 'Subir rama al remoto' }, cmd: (val, base, branch) => `git push origin ${val || branch || '<branch>'}`, tags: 'push remote branch' },
+  { desc: { en: 'Push & Track (upstream)', es: 'Subir y Trackear (upstream)' }, cmd: (val, base, branch) => `git push -u origin ${val || branch || '<branch>'}`, tags: 'push remote upstream track' },
+  { desc: { en: 'Pull from origin', es: 'Bajar cambios (Pull de origin)' }, cmd: (val, base, branch) => `git pull origin ${val || base || '<branch>'}`, tags: 'pull origin remote sync' }
 ];
 
 export const NODE_LIBRARY = [
