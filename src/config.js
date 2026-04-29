@@ -60,7 +60,9 @@ export const translations = {
     lblFavsVault: 'My Favorites',
     subtitleFavs: 'Your most used commands in one place',
     lblPriority: 'PRIORITY',
-    txtNoFavs: 'No favorites yet. Star some commands to see them here!'
+    txtNoFavs: 'No favorites yet. Star some commands to see them here!',
+    titleAddFav: 'Favorite',
+    titleRemoveFav: 'Remove from Favorites'
   },
   es: {
     title: 'Centro de Mandos',
@@ -123,7 +125,9 @@ export const translations = {
     lblFavsVault: 'Mis Favoritos',
     subtitleFavs: 'Tus comandos más usados en un solo lugar',
     lblPriority: 'PRIORIDAD',
-    txtNoFavs: 'Aún no tienes favoritos. ¡Marca algunos comandos para verlos aquí!'
+    txtNoFavs: 'Aún no tienes favoritos. ¡Marca algunos comandos para verlos aquí!',
+    titleAddFav: 'Marcar como favorito',
+    titleRemoveFav: 'Quitar de favoritos'
   }
 };
 

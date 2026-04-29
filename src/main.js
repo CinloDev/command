@@ -117,7 +117,8 @@ const updateTranslations = () => {
   // Update Libraries (Vaults)
   renderLibrary('git', GIT_LIBRARY, 'git-library-grid', gitSearchInput.value);
   renderLibrary('node', NODE_LIBRARY, 'node-library-grid', nodeSearchInput.value);
-  if (typeof renderDockerLibrary === 'function') renderDockerLibrary(dockerSearchInput.value);
+  renderDockerLibrary(dockerSearchInput.value);
+  renderFavorites();
 };
 
 langBtn.addEventListener('click', () => {
@@ -613,7 +614,7 @@ const renderFavorites = () => {
             <span class="module-badge module-badge-${lib.module}">${lib.module}</span>
             <div class="cmd-desc">${item.desc[currentLang]}</div>
           </div>
-          <button class="star-btn active" title="Remove from Favorites">
+          <button class="star-btn active" title="${t.titleRemoveFav}">
             <i data-lucide="star" fill="currentColor" style="width: 14px; height: 14px;"></i>
           </button>
         </div>
@@ -656,6 +657,7 @@ const renderLibrary = (module, data, containerId, query = '') => {
   const container = document.getElementById(containerId);
   if (!container) return;
   
+  const t = translations[currentLang];
   const globalParam = (module === 'git' && gitParamInput) ? gitParamInput.value : '';
   
   const filtered = data.filter(item => {
@@ -684,7 +686,7 @@ const renderLibrary = (module, data, containerId, query = '') => {
     card.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: start;">
         <div class="cmd-desc">${item.desc[currentLang]}</div>
-        <button class="star-btn ${isFav ? 'active' : ''}" title="Favorite">
+        <button class="star-btn ${isFav ? 'active' : ''}" title="${isFav ? t.titleRemoveFav : t.titleAddFav}">
           <i data-lucide="star" ${isFav ? 'fill="currentColor"' : ''} style="width: 14px; height: 14px;"></i>
         </button>
       </div>
@@ -956,6 +958,7 @@ const renderDockerLibrary = (filter = '') => {
   if (!dockerLibraryGrid) return;
   const file = dockerFileInput?.value?.trim() || 'docker-compose.dev.yml';
   const svc = dockerServiceInput?.value?.trim() || 'api';
+  const t = translations[currentLang];
 
   const filtered = DOCKER_LIBRARY.filter(item => 
     item.desc.en.toLowerCase().includes(filter.toLowerCase()) || 
@@ -973,7 +976,7 @@ const renderDockerLibrary = (filter = '') => {
     card.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: start;">
         <div class="cmd-desc">${item.desc[currentLang]}</div>
-        <button class="star-btn ${isFav ? 'active' : ''}" title="Favorite">
+        <button class="star-btn ${isFav ? 'active' : ''}" title="${isFav ? t.titleRemoveFav : t.titleAddFav}">
           <i data-lucide="star" ${isFav ? 'fill="currentColor"' : ''} style="width: 14px; height: 14px;"></i>
         </button>
       </div>
