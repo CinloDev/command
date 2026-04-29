@@ -28,6 +28,11 @@ body.theme-docker {
   --glow-shadow: 0 0 20px rgba(36, 150, 237, 0.2);
 }
 
+body.theme-favs {
+  --accent-primary: #ffcc00;
+  --glow-shadow: 0 0 20px rgba(255, 204, 0, 0.2);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -797,6 +802,54 @@ body:not([class*="theme-"]) .task-history {
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.15);
 }
+
+.star-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  border-radius: 6px;
+}
+
+.star-btn:hover {
+  color: #ffcc00;
+  background: rgba(255, 204, 0, 0.1);
+}
+
+.star-btn.active {
+  color: #ffcc00;
+}
+
+.star-btn.active i, .star-btn.active svg {
+  fill: currentColor;
+}
+
+/* Favorites Card Enhancements */
+.library-card.fav-card-git { border-left: 3px solid var(--accent-git); }
+.library-card.fav-card-node { border-left: 3px solid var(--accent-node); }
+.library-card.fav-card-docker { border-left: 3px solid var(--accent-docker); }
+
+.library-card.fav-card-git:hover { background: rgba(241, 78, 50, 0.05); box-shadow: 0 0 15px rgba(241, 78, 50, 0.1); }
+.library-card.fav-card-node:hover { background: rgba(67, 211, 158, 0.05); box-shadow: 0 0 15px rgba(67, 211, 158, 0.1); }
+.library-card.fav-card-docker:hover { background: rgba(36, 150, 237, 0.05); box-shadow: 0 0 15px rgba(36, 150, 237, 0.1); }
+
+.module-badge {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+.module-badge-git { background: rgba(241, 78, 50, 0.15); color: var(--accent-git); }
+.module-badge-node { background: rgba(67, 211, 158, 0.15); color: var(--accent-node); }
+.module-badge-docker { background: rgba(36, 150, 237, 0.15); color: var(--accent-docker); }
 
 .library-card .cmd-desc {
   font-size: 0.75rem;

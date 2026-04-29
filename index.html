@@ -37,9 +37,28 @@
           <img src="https://cdn.simpleicons.org/docker/white" alt="Docker">
           <span>Docker</span>
         </button>
+        <button class="nav-item" data-module="favs">
+          <i data-lucide="star" style="width: 20px; height: 20px;"></i>
+          <span>Favs</span>
+        </button>
       </nav>
 
       <main class="task-deck">
+        <!-- Module Favs (Hidden by default) -->
+        <div id="module-favs" class="module-content">
+          <div class="library-header" style="flex-direction: column; align-items: start; gap: 12px;">
+            <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+              <h2 id="lbl-favs-vault" class="input-label" style="margin: 0;">My Favorites</h2>
+              <div id="fav-order-controls" style="display: flex; gap: 8px;">
+                <!-- Order buttons will be injected here -->
+              </div>
+            </div>
+            <p id="txt-favs-subtitle" style="font-size: 0.8rem; color: var(--text-secondary);">Your most used commands organized by stack</p>
+          </div>
+          <div id="favs-library-grid" class="library-grid">
+            <!-- Favs injected here -->
+          </div>
+        </div>
         <div id="module-git" class="module-content active">
             <div class="workflow-selector">
               <button class="wf-btn active" data-wf="new" id="btn-wf-new"><span>New Branch</span></button>
@@ -48,7 +67,7 @@
 
             <div class="input-row">
               <div class="input-group">
-                <label class="input-label" for="task-title">Task Title / Branch</label>
+                <label class="input-label" id="lbl-task-title" for="task-title">Task Title / Branch</label>
                 <div style="position: relative;">
                   <input type="text" id="task-title" placeholder="e.g. Add user authentication flow" autocomplete="off" style="padding-right: 50px;">
                   <button id="translate-btn" class="translate-trigger" title="Translate Title">
@@ -57,7 +76,7 @@
                 </div>
               </div>
               <div class="input-group" id="base-branch-group">
-                <label class="input-label" for="base-branch">Base Branch</label>
+                <label class="input-label" id="lbl-base-branch" for="base-branch">Base Branch</label>
                 <input type="text" id="base-branch" value="dev" autocomplete="off">
               </div>
             </div>
@@ -84,9 +103,11 @@
           <div id="manual-notice" class="manual-notice" style="display: none;"></div>
           <button id="reset-branch" class="secondary-btn" style="display: none; margin-top: 8px; font-size: 0.8rem; height: 32px;">Reset to auto</button>
 
-          <label class="input-label" id="lbl-commit-msg">Commit Message</label>
-          <div class="branch-preview">
-            <textarea class="branch-input" id="commit-msg-input" spellcheck="false" autocomplete="off" rows="1"></textarea>
+          <div id="commit-group">
+            <label class="input-label" id="lbl-commit-msg">Commit Message</label>
+            <div class="branch-preview">
+              <textarea class="branch-input" id="commit-msg-input" spellcheck="false" autocomplete="off" rows="1"></textarea>
+            </div>
           </div>
 
           <div class="header-with-action">

@@ -1,139 +1,6 @@
 import './style.css'
-
-const translations = {
-  en: {
-    title: 'Command Center',
-    subtitleGit: 'Transform tasks into git workflows instantly',
-    subtitleNode: 'Manage packages and scripts without memorizing commands',
-    subtitleDocker: 'Spin up containers and services with a single click',
-    wfNew: 'New Branch',
-    wfRecreate: 'Recreate Branch',
-    lblTask: 'Task Title / Branch',
-    lblBase: 'Base Branch',
-    lblType: 'Task Type',
-    lblTarget: 'Target Branch',
-    lblCommit: 'Commit Message',
-    lblWorkflow: 'Workflow Commands',
-    btnCopy: 'Copy',
-    btnCopySeq: 'Copy Sequence',
-    copied: 'Copied!',
-    cmdCreate: 'Create Branch',
-    cmdStage: 'Stage Changes',
-    cmdCommit: 'Commit Task',
-    cmdPush: 'Push to Origin',
-    cmdExit: 'Exit Branch',
-    cmdDelete: 'Delete Local',
-    cmdDeleteRemote: 'Delete Remote',
-    cmdPull: 'Pull Latest',
-    cmdRecreate: 'Recreate Branch',
-    cmdPushNew: 'Push Fresh Branch',
-    cmdSync: 'Pro/Team Sync',
-    manualNotice: 'Manual mode: Task type only affects commit message',
-    nodeMgr: 'Package Manager',
-    nodeInstall: 'Install Packages',
-    nodeType: 'Type',
-    nodeQuick: 'Quick NPM Actions',
-    nodeOutput: 'Generated Commands',
-    dockerImg: 'Image Name',
-    dockerPort: 'Ports (Host:Container)',
-    dockerCompose: 'Docker Compose',
-    dockerQuick: 'Quick Management',
-    dockerOutput: 'Generated Commands',
-    dockerVault: 'Docker Vault (Cheat Sheet)',
-    dockerSearch: 'Search command...',
-    dockerService: 'Service Name',
-    dockerFile: 'Compose File',
-    lblFullPreview: 'Full Workflow Preview',
-    lblGitVault: 'Git Vault (Quick Actions)',
-    lblNodeVault: 'Node Vault (Toolbox)',
-    searchPlaceholder: 'Search commands...',
-    warningLong: 'Branch name is quite long!',
-    warningChars: 'The branch contains unusual characters.',
-    btnReset: 'Reset to auto',
-    listView: 'List View',
-    terminalView: 'Terminal View',
-    typeFeature: 'Feature',
-    typeFix: 'Fix',
-    typeHotfix: 'Hotfix',
-    typeChore: 'Chore',
-    typeDocs: 'Docs',
-    typeRefactor: 'Refactor'
-  },
-  es: {
-    title: 'Centro de Mandos',
-    subtitleGit: 'Transforma tareas en flujos de git al instante',
-    subtitleNode: 'Gestiona paquetes y scripts sin memorizar comandos',
-    subtitleDocker: 'Levanta contenedores y servicios con un solo clic',
-    wfNew: 'Nueva Rama',
-    wfRecreate: 'Recrear Rama',
-    lblTask: 'Título de Tarea / Rama',
-    lblBase: 'Rama Base',
-    lblType: 'Tipo de Tarea',
-    lblTarget: 'Rama Generada',
-    lblCommit: 'Mensaje de Commit',
-    lblWorkflow: 'Comandos del Flujo',
-    btnCopy: 'Copiar',
-    btnCopySeq: 'Copiar Secuencia',
-    copied: '¡Copiado!',
-    cmdCreate: 'Crear Rama',
-    cmdStage: 'Preparar Cambios',
-    cmdCommit: 'Confirmar Tarea (Commit)',
-    cmdPush: 'Subir a Origin',
-    cmdExit: 'Salir de la Rama',
-    cmdDelete: 'Borrar Rama Local',
-    cmdDeleteRemote: 'Borrar Rama Remota',
-    cmdPull: 'Bajar cambios (Pull)',
-    cmdRecreate: 'Recrear Rama',
-    cmdPushNew: 'Subir nueva rama',
-    cmdSync: 'Sincronización Pro',
-    manualNotice: 'Modo manual: El tipo de tarea solo afecta al commit',
-    nodeMgr: 'Gestor de Paquetes',
-    nodeInstall: 'Instalar Paquetes',
-    nodeType: 'Tipo',
-    nodeQuick: 'Acciones Rápidas NPM',
-    nodeOutput: 'Comandos Generados',
-    dockerImg: 'Nombre de Imagen',
-    dockerPort: 'Puertos (Host:Contenedor)',
-    dockerCompose: 'Docker Compose',
-    dockerQuick: 'Gestión Rápida',
-    dockerOutput: 'Comandos Generados',
-    dockerVault: 'Bóveda de Docker (Guía Rápida)',
-    dockerSearch: 'Buscar comando...',
-    dockerService: 'Nombre del Servicio',
-    dockerFile: 'Archivo Compose',
-    lblFullPreview: 'Vista Previa del Flujo Completo',
-    lblGitVault: 'Bóveda de Git (Acciones Rápidas)',
-    lblNodeVault: 'Bóveda de Node (Herramientas)',
-    searchPlaceholder: 'Buscar comandos...',
-    warningLong: '¡La rama es muy larga!',
-    warningChars: 'La rama contiene caracteres inusuales.',
-    btnReset: 'Volver a automático',
-    listView: 'Vista Lista',
-    terminalView: 'Modo Terminal',
-    typeFeature: 'Feature',
-    typeFix: 'Fix',
-    typeHotfix: 'Hotfix',
-    typeChore: 'Chore',
-    typeDocs: 'Docs',
-    typeRefactor: 'Refactor'
-  }
-};
-
-const STOP_WORDS = new Set([
-  'a', 'an', 'the', 'and', 'or', 'but', 'is', 'if', 'then', 'else', 'when', 'at', 'from', 'by', 'for', 'with', 'in', 'out', 'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'why', 'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don', 'should', 'now', 'to', 'that', 'this', 'these', 'those', 'am', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing',
-  'el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas', 'y', 'o', 'pero', 'con', 'para', 'por', 'de', 'del', 'al', 'en', 'sobre', 'entre', 'hacia', 'hasta', 'desde', 'durante', 'contra', 'que', 'este', 'esta', 'estos', 'estas', 'ese', 'esa', 'esos', 'esas', 'mi', 'tu', 'su', 'mis', 'tus', 'sus', 'como', 'más', 'pero', 'sus', 'le', 'ya', 'este', 'sí', 'porque', 'esta', 'entre', 'cuando', 'muy', 'sin', 'sobre', 'también', 'me', 'hasta', 'hay', 'donde', 'quien', 'desde', 'todo', 'nos', 'durante', 'todos', 'uno', 'les', 'ni', 'contra', 'otros', 'ese', 'eso', 'ante', 'ellos', 'esto', 'mí', 'antes', 'algunos', 'qué', 'unos', 'yo', 'otro', 'otras', 'otra', 'él', 'tanto', 'esa', 'estos', 'mucho', 'quienes', 'nada', 'si'
-]);
-
-const TECH_WHITELIST = new Set([
-  'api', 'ui', 'ux', 'db', 'auth', 'login', 'url', 'id', 'v1', 'v2', 'css', 'js', 'html', 'json', 'sql', 'rest', 'git', 'fe', 'be',
-  'bd', 'servidor', 'server', 'error', 'falla', 'fail', 'inicio', 'sesion', 'token', 'endpoint', 'ruta', 'route', 'modelo', 'model', 'vista', 'view', 'controlador', 'controller',
-  'loader', 'componente', 'component', 'modulo', 'module', 'servicio', 'service', 'hook', 'store', 'state', 'reusable'
-]);
-const ACTION_VERBS = new Set([
-  'add', 'fix', 'update', 'remove', 'delete', 'refactor', 'create', 'patch', 'bug', 'error', 'show', 'hide',
-  'agregar', 'anadir', 'quitar', 'eliminar', 'borrar', 'corregir', 'arreglar', 'actualizar', 'mejorar', 'crear', 'refactorizar', 'mostrar', 'ocultar',
-  'unificar', 'unify', 'reemplazar', 'replace', 'estandarizar', 'standardize', 'migrar', 'migrate', 'implementar', 'implement'
-]);
+import { GIT_LIBRARY, NODE_LIBRARY, DOCKER_LIBRARY } from './libraries.js'
+import { translations, STOP_WORDS, TECH_WHITELIST, ACTION_VERBS } from './config.js'
 
 let currentLang = localStorage.getItem('lang') || 'en';
 
@@ -176,12 +43,15 @@ const dockerCommandList = document.getElementById('docker-command-list');
 const dockerOutput = document.getElementById('docker-output');
 
 let taskHistory = JSON.parse(localStorage.getItem('taskHistory')) || [];
+let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+let favoriteOrder = JSON.parse(localStorage.getItem('favoriteOrder')) || ['git', 'node', 'docker'];
 let isTerminalMode = false;
 
 let currentType = 'feature';
 let currentWorkflow = 'new';
 let isManualBranch = false;
 let isManualCommit = false;
+let isManualType = false;
 let currentActiveModule = 'git';
 
 const updateTranslations = () => {
@@ -225,9 +95,14 @@ const updateTranslations = () => {
   
   if (resetBranchBtn) resetBranchBtn.textContent = t.btnReset;
   
-  const labels = document.querySelectorAll('.input-label');
-  labels[0].textContent = t.lblTask;
-  labels[1].textContent = t.lblBase;
+  document.getElementById('lbl-favs-vault').textContent = t.lblFavsVault;
+  document.getElementById('txt-favs-subtitle').textContent = t.subtitleFavs;
+  
+  // Explicit ID based label updates
+  const labelTask = document.getElementById('lbl-task-title');
+  const labelBase = document.getElementById('lbl-base-branch');
+  if (labelTask) labelTask.textContent = t.lblTask;
+  if (labelBase) labelBase.textContent = t.lblBase;
   
   // Update Type Buttons
   typeButtons.forEach(btn => {
@@ -238,7 +113,11 @@ const updateTranslations = () => {
   
   langBtn.textContent = currentLang.toUpperCase();
   updateUI();
-  if (typeof renderDockerLibrary === 'function') renderDockerLibrary();
+  
+  // Update Libraries (Vaults)
+  renderLibrary('git', GIT_LIBRARY, 'git-library-grid', gitSearchInput.value);
+  renderLibrary('node', NODE_LIBRARY, 'node-library-grid', nodeSearchInput.value);
+  if (typeof renderDockerLibrary === 'function') renderDockerLibrary(dockerSearchInput.value);
 };
 
 langBtn.addEventListener('click', () => {
@@ -291,6 +170,13 @@ const slugify = (text) => {
   return parts.join('-') || 'task';
 };
 
+const sanitizeBranchName = (text) => {
+  return text
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\d\/\-._]/g, '');
+};
+
 
 
 const translateTitle = async (e) => {
@@ -329,28 +215,8 @@ const updateUI = () => {
   if (title.length > 0) {
     outputSection.classList.add('visible');
     
-    if (!isManualBranch) {
-      const generatedBranch = (title.includes('/') || currentWorkflow === 'recreate') 
-        ? title 
-        : `${currentType}/${slugify(title)}`;
-      branchNameInput.value = generatedBranch;
-      if (resetBranchBtn) resetBranchBtn.style.display = 'none';
-      if (manualNotice) manualNotice.style.display = 'none';
-    } else {
-      if (resetBranchBtn) resetBranchBtn.style.display = 'flex';
-      if (manualNotice) manualNotice.style.display = 'flex';
-    }
-
-    if (!isManualCommit) {
-      const cleanTitle = title.replace(/\[.*?\]/g, '').replace(/\b(frontend|backend|fe|be|front|back)\b/gi, '').trim();
-      const issueMatch = title.match(/#(\d+)/);
-      const commitPrefix = issueMatch ? `#${issueMatch[1]} - ` : '';
-      commitMsgInput.value = `${currentType}: ${commitPrefix}${cleanTitle}`;
-      autoResizeCommit();
-    }
-    
     // SMART TYPE DETECTION
-    if (!isManualBranch && title.length > 3) {
+    if (!isManualType && !isManualBranch && title.length > 3) {
       const detected = detectType(title);
       if (detected !== currentType) {
         currentType = detected;
@@ -360,6 +226,28 @@ const updateUI = () => {
       }
     }
 
+    if (!isManualBranch) {
+      const generatedBranch = (title.includes('/') || currentWorkflow === 'recreate') 
+        ? sanitizeBranchName(title) 
+        : `${currentType}/${slugify(title)}`;
+      branchNameInput.value = generatedBranch;
+    }
+
+    if (resetBranchBtn) {
+      resetBranchBtn.style.display = (!isManualBranch && !isManualType) ? 'none' : 'flex';
+    }
+    if (manualNotice) {
+      manualNotice.style.display = isManualBranch ? 'flex' : 'none';
+    }
+
+    if (!isManualCommit) {
+      const cleanTitle = title.replace(/\[.*?\]/g, '').replace(/\b(frontend|backend|fe|be|front|back)\b/gi, '').trim();
+      const issueMatch = title.match(/#(\d+)/);
+      const commitPrefix = issueMatch ? `#${issueMatch[1]} - ` : '';
+      commitMsgInput.value = `${currentType}: ${commitPrefix}${cleanTitle}`;
+      autoResizeCommit();
+    }
+
     validateBranch(branchNameInput.value);
     renderCommands(branchNameInput.value, commitMsgInput.value);
     renderLibrary('git', GIT_LIBRARY, 'git-library-grid', gitSearchInput.value);
@@ -367,6 +255,7 @@ const updateUI = () => {
     outputSection.classList.remove('visible');
     isManualBranch = false;
     isManualCommit = false;
+    isManualType = false;
     resetBranchBtn.style.display = 'none';
     manualNotice.style.display = 'none';
     branchWarning.style.display = 'none';
@@ -400,9 +289,7 @@ const autoResizeCommit = () => {
 
 branchNameInput.addEventListener('input', () => {
   isManualBranch = true;
-  const sanitized = branchNameInput.value
-    .replace(/\s+/g, '-')
-    .replace(/[^\w\d\/\-._]/g, '');
+  const sanitized = sanitizeBranchName(branchNameInput.value);
   if (branchNameInput.value !== sanitized) branchNameInput.value = sanitized;
   updateUI();
 });
@@ -415,6 +302,7 @@ commitMsgInput.addEventListener('input', () => {
 
 resetBranchBtn.addEventListener('click', () => {
   isManualBranch = false;
+  isManualType = false;
   updateUI();
 });
 
@@ -457,9 +345,10 @@ const renderCommands = (branch, commitMsg) => {
       }
       commands.push(
         { label: t.cmdCreate || 'Create', cmd: `git checkout -b ${safeBranch}` },
+        { label: t.cmdStatus || 'Status', cmd: `git status` },
         { label: t.cmdStage || 'Stage', cmd: `git add .` },
         { label: t.cmdCommit || 'Commit', cmd: `git commit -m "${safeCommit}"` },
-        { label: t.cmdPush || 'Push', cmd: `git push origin ${safeBranch}` }
+        { label: t.cmdPush || 'Push', cmd: `git push -u origin ${safeBranch}` }
       );
     }
 
@@ -550,6 +439,7 @@ taskTitleInput.addEventListener('input', updateUI);
 commitMsgInput.addEventListener('input', autoResizeCommit);
 typeButtons.forEach(btn => {
   btn.addEventListener('click', () => {
+    isManualType = true;
     typeButtons.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentType = btn.dataset.type;
@@ -623,6 +513,7 @@ window.loadHistoryItem = (title, type) => {
   // First, generate the content as if it were auto
   isManualBranch = false;
   isManualCommit = false;
+  isManualType = true;
   updateUI();
   
   // THEN, lock it to manual so the user can see it's from history
@@ -640,32 +531,126 @@ window.loadHistoryItem = (title, type) => {
   if (manualNotice) manualNotice.style.display = 'flex';
 };
 
-// LIBRARIES (VAULTS)
-const GIT_LIBRARY = [
-  { desc: { en: 'Stash: Save changes', es: 'Stash: Guardar cambios' }, cmd: () => `git stash`, tags: 'stash save' },
-  { desc: { en: 'Stash: Pop (apply + remove)', es: 'Stash: Recuperar (pop)' }, cmd: () => `git stash pop`, tags: 'stash pop' },
-  { desc: { en: 'Amend: Update last commit', es: 'Amend: Actualizar último commit' }, cmd: () => `git commit --amend --no-edit`, tags: 'amend last commit' },
-  { desc: { en: 'Switch to previous branch', es: 'Volver a la rama anterior' }, cmd: () => `git checkout -`, tags: 'checkout switch back' },
-  { desc: { en: 'Fetch & Prune', es: 'Sincronizar y limpiar (Prune)' }, cmd: () => `git fetch --all --prune`, tags: 'fetch prune sync' },
-  { desc: { en: 'Rebase from branch', es: 'Rebase desde rama' }, cmd: (val) => `git rebase ${val || baseBranchInput.value || 'dev'}`, placeholder: 'branch', tags: 'rebase' },
-  { desc: { en: 'Interactive Rebase', es: 'Rebase Interactivo' }, cmd: (val) => `git rebase -i ${val || 'HEAD~3'}`, placeholder: 'target', tags: 'rebase interactive' },
-  { desc: { en: 'Cherry-pick', es: 'Cherry-pick' }, cmd: (val) => `git cherry-pick ${val || '<hash>'}`, placeholder: 'hash', tags: 'cherry-pick' },
-  { desc: { en: 'Checkout Branch', es: 'Ir a rama' }, cmd: (val) => `git checkout ${val || branchNameInput.value || '<branch>'}`, placeholder: 'branch', tags: 'checkout branch' },
-  { desc: { en: 'Merge branch into current', es: 'Merge de rama a actual' }, cmd: (val) => `git merge ${val || baseBranchInput.value || '<branch>'}`, placeholder: 'branch', tags: 'merge branch' },
-  { desc: { en: 'Clean: List dry-run', es: 'Limpiar: Simulacro' }, cmd: () => `git clean -fdn`, tags: 'clean dry' },
-  { desc: { en: 'Delete merged local branches', es: 'Borrar ramas locales mergeadas' }, cmd: (val) => `git branch --merged ${val || baseBranchInput.value || 'dev'} | grep -v "\\*" | xargs -n 1 git branch -d`, tags: 'clean branches' },
-  { desc: { en: 'Log: Visual Graph', es: 'Log: Gráfico visual' }, cmd: () => `git log --oneline --graph --all`, tags: 'log graph' },
-  { desc: { en: 'Log: Search by message', es: 'Log: Buscar por mensaje' }, cmd: (val) => `git log --oneline --grep="${val || 'pattern'}"`, placeholder: 'pattern', tags: 'log search grep' },
-  { desc: { en: 'Log: Filter by author', es: 'Log: Filtrar por autor' }, cmd: (val) => `git log --oneline --author="${val || 'name'}"`, placeholder: 'author', tags: 'log author' }
-];
+const toggleFavorite = (descEn) => {
+  const index = favorites.indexOf(descEn);
+  if (index === -1) {
+    favorites.push(descEn);
+  } else {
+    favorites.splice(index, 1);
+  }
+  localStorage.setItem('favorites', JSON.stringify(favorites));
+  
+  // Re-render to show update
+  renderLibrary('git', GIT_LIBRARY, 'git-library-grid', gitSearchInput.value);
+  renderLibrary('node', NODE_LIBRARY, 'node-library-grid', nodeSearchInput.value);
+  renderDockerLibrary(dockerSearchInput.value);
+  renderFavorites();
+};
 
-const NODE_LIBRARY = [
-  { desc: { en: 'Deep Clean (node_modules)', es: 'Limpieza profunda (node_modules)' }, cmd: () => `rm -rf node_modules package-lock.json && npm install`, tags: 'clean reset' },
-  { desc: { en: 'NPM Audit Fix', es: 'Arreglar vulnerabilidades' }, cmd: () => `npm audit fix`, tags: 'audit fix' },
-  { desc: { en: 'Check versions', es: 'Verificar versiones instaladas' }, cmd: () => `npm list --depth=0`, tags: 'list versions' },
-  { desc: { en: 'Outdated packages', es: 'Paquetes desactualizados' }, cmd: () => `npm outdated`, tags: 'outdated' },
-  { desc: { en: 'Initialize TypeScript', es: 'Inicializar TypeScript' }, cmd: () => `npx tsc --init`, tags: 'typescript init' }
-];
+window.moveStackToFront = (stack) => {
+  const index = favoriteOrder.indexOf(stack);
+  if (index > 0) {
+    favoriteOrder.splice(index, 1);
+    favoriteOrder.unshift(stack);
+    localStorage.setItem('favoriteOrder', JSON.stringify(favoriteOrder));
+    renderFavorites();
+  }
+};
+
+const renderFavorites = () => {
+  const container = document.getElementById('favs-library-grid');
+  const controls = document.getElementById('fav-order-controls');
+  if (!container) return;
+  
+  const t = translations[currentLang];
+  
+  if (controls) {
+    controls.innerHTML = `
+      <span style="font-size: 0.65rem; color: var(--text-secondary); align-self: center; margin-right: 4px;">${t.lblPriority}:</span>
+      ${favoriteOrder.map((stack, i) => `
+        <button class="module-badge module-badge-${stack}" 
+                onclick="moveStackToFront('${stack}')" 
+                style="cursor: pointer; ${i === 0 ? 'box-shadow: 0 0 10px var(--accent-' + stack + '); border: 1px solid white;' : 'opacity: 0.5;'}">
+          ${stack}
+        </button>
+      `).join('')}
+    `;
+  }
+
+  container.innerHTML = '';
+  
+  const allLibraries = [
+    { module: 'git', data: GIT_LIBRARY },
+    { module: 'node', data: NODE_LIBRARY },
+    { module: 'docker', data: DOCKER_LIBRARY }
+  ].sort((a, b) => favoriteOrder.indexOf(a.module) - favoriteOrder.indexOf(b.module));
+  
+  let hasFavs = false;
+  
+  allLibraries.forEach(lib => {
+    const favs = lib.data.filter(item => favorites.includes(item.desc.en));
+    if (favs.length > 0) hasFavs = true;
+    
+    favs.forEach(item => {
+      const card = document.createElement('div');
+      card.className = `library-card fav-card-${lib.module}`;
+      
+      let finalCmd = '';
+      if (lib.module === 'git') {
+         const globalParam = gitParamInput ? gitParamInput.value : '';
+         finalCmd = typeof item.cmd === 'function' ? item.cmd(globalParam, baseBranchInput.value, branchNameInput.value) : item.cmd;
+      } else if (lib.module === 'node') {
+         finalCmd = typeof item.cmd === 'function' ? item.cmd() : item.cmd;
+      } else if (lib.module === 'docker') {
+         const file = dockerFileInput?.value?.trim() || 'docker-compose.dev.yml';
+         const svc = dockerServiceInput?.value?.trim() || 'api';
+         finalCmd = typeof item.cmd === 'function' ? item.cmd(file, svc) : item.cmd;
+      }
+
+      card.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <span class="module-badge module-badge-${lib.module}">${lib.module}</span>
+            <div class="cmd-desc">${item.desc[currentLang]}</div>
+          </div>
+          <button class="star-btn active" title="Remove from Favorites">
+            <i data-lucide="star" fill="currentColor" style="width: 14px; height: 14px;"></i>
+          </button>
+        </div>
+        <div class="cmd-val">
+          <span>${finalCmd.length > 35 ? finalCmd.substring(0, 32) + '...' : finalCmd}</span>
+          <i data-lucide="copy" style="width: 12px; height: 12px;"></i>
+        </div>
+      `;
+      
+      const cmdVal = card.querySelector('.cmd-val');
+      cmdVal.onclick = () => copyToClipboard(finalCmd, cmdVal);
+      
+      const starBtn = card.querySelector('.star-btn');
+      starBtn.onclick = (e) => {
+        e.stopPropagation();
+        toggleFavorite(item.desc.en);
+        renderFavorites();
+      };
+      
+      container.appendChild(card);
+    });
+  });
+  
+  if (!hasFavs) {
+    container.innerHTML = `
+      <div class="empty-state" style="grid-column: 1 / -1; padding: 40px; border: 1px dashed var(--card-border); border-radius: 12px;">
+        <i data-lucide="star-off" style="width: 48px; height: 48px; opacity: 0.2; margin-bottom: 10px;"></i>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">${t.txtNoFavs}</p>
+      </div>
+    `;
+  }
+
+  if (window.lucide) window.lucide.createIcons();
+};
+
+// LIBRARIES (VAULTS)
+// LIBRARIES (VAULTS) - MOVED TO libraries.js
 
 const renderLibrary = (module, data, containerId, query = '') => {
   const container = document.getElementById(containerId);
@@ -675,9 +660,13 @@ const renderLibrary = (module, data, containerId, query = '') => {
   
   const filtered = data.filter(item => {
     const q = query.toLowerCase();
+    const testCmd = typeof item.cmd === 'function' 
+      ? item.cmd(globalParam, baseBranchInput.value, branchNameInput.value) 
+      : item.cmd;
+    
     return item.desc.en.toLowerCase().includes(q) || 
            item.desc.es.toLowerCase().includes(q) || 
-           (typeof item.cmd === 'function' ? item.cmd(globalParam).toLowerCase().includes(q) : item.cmd.toLowerCase().includes(q)) || 
+           testCmd.toLowerCase().includes(q) || 
            (item.tags && item.tags.toLowerCase().includes(q));
   });
 
@@ -686,15 +675,30 @@ const renderLibrary = (module, data, containerId, query = '') => {
     const card = document.createElement('div');
     card.className = 'library-card';
     
-    const finalCmd = item.cmd(globalParam);
+    const finalCmd = typeof item.cmd === 'function' 
+      ? item.cmd(globalParam, baseBranchInput.value, branchNameInput.value) 
+      : item.cmd;
+    
+    const isFav = favorites.includes(item.desc.en);
     
     card.innerHTML = `
-      <div class="cmd-desc">${item.desc[currentLang]}</div>
+      <div style="display: flex; justify-content: space-between; align-items: start;">
+        <div class="cmd-desc">${item.desc[currentLang]}</div>
+        <button class="star-btn ${isFav ? 'active' : ''}" title="Favorite">
+          <i data-lucide="star" ${isFav ? 'fill="currentColor"' : ''} style="width: 14px; height: 14px;"></i>
+        </button>
+      </div>
       <div class="cmd-val">
         <span>${finalCmd.length > 35 ? finalCmd.substring(0, 32) + '...' : finalCmd}</span>
         <i data-lucide="copy" style="width: 12px; height: 12px;"></i>
       </div>
     `;
+
+    const starBtn = card.querySelector('.star-btn');
+    starBtn.onclick = (e) => {
+      e.stopPropagation();
+      toggleFavorite(item.desc.en);
+    };
 
     const cmdVal = card.querySelector('.cmd-val');
     cmdVal.onclick = () => copyToClipboard(finalCmd, cmdVal);
@@ -715,10 +719,12 @@ workflowButtons.forEach(btn => {
       baseBranchGroup.style.display = 'flex';
       document.querySelector('.task-types').style.display = 'none';
       document.getElementById('lbl-task-type').style.display = 'none';
+      document.getElementById('commit-group').style.display = 'none';
     } else {
       baseBranchGroup.style.display = 'flex';
       document.querySelector('.task-types').style.display = 'flex';
       document.getElementById('lbl-task-type').style.display = 'block';
+      document.getElementById('commit-group').style.display = 'block';
     }
     updateUI();
   });
@@ -944,30 +950,7 @@ dockerActionBtns.forEach(btn => {
   });
 });
 
-// DOCKER LIBRARY DATA (Templates)
-const DOCKER_LIBRARY = [
-  // Laravel & Cache
-  { desc: { en: 'Artisan: Clear ALL Cache', es: 'Artisan: Limpiar TODA la caché' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} php artisan config:clear && docker compose -f ${f} exec ${s} php artisan cache:clear && docker compose -f ${f} exec ${s} php artisan route:clear && docker compose -f ${f} exec ${s} php artisan view:clear`, tags: 'laravel artisan cache clear' },
-  { desc: { en: 'Artisan: Config Clear', es: 'Artisan: Limpiar Config' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} php artisan config:clear`, tags: 'laravel artisan config' },
-  { desc: { en: 'Check Email Env', es: 'Ver Envs de Email' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} printenv | grep MAIL_`, tags: 'env mail email' },
-  
-  // Docker Management
-  { desc: { en: 'Restart Service', es: 'Reiniciar Servicio' }, cmd: (f, s) => `docker compose -f ${f} restart ${s}`, tags: 'restart service' },
-  { desc: { en: 'Rebuild & Up', es: 'Reconstruir y Levantar' }, cmd: (f, s) => `docker compose -f ${f} down && docker compose -f ${f} up -d --build`, tags: 'rebuild build up' },
-  { desc: { en: 'Down (delete containers/networks)', es: 'Bajar docker (elimina todo)' }, cmd: (f, s) => `docker compose -f ${f} down`, tags: 'down delete remove' },
-  { desc: { en: 'Up -d (create and start)', es: 'Levantar docker (background)' }, cmd: (f, s) => `docker compose -f ${f} up -d`, tags: 'up start background' },
-  
-  // Artisan Standard
-  { desc: { en: 'Artisan: Migrate', es: 'Artisan: Correr migraciones' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} php artisan migrate`, tags: 'laravel artisan migrate php' },
-  { desc: { en: 'Artisan: Fresh + Seed', es: 'Artisan: Reset completo + Seed' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} php artisan migrate:fresh --seed`, tags: 'laravel artisan fresh seed php' },
-  { desc: { en: 'Artisan: DB Seed', es: 'Artisan: Cargar seeders' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} php artisan db:seed`, tags: 'laravel artisan seed php' },
-  { desc: { en: 'Artisan: Tinker', es: 'Artisan: Entrar a Tinker' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} php artisan tinker`, tags: 'laravel artisan tinker php' },
-  
-  // System
-  { desc: { en: 'Interactive shell (bash)', es: 'Entrar al contenedor (bash)' }, cmd: (f, s) => `docker compose -f ${f} exec ${s} bash`, tags: 'exec shell terminal bash' },
-  { desc: { en: 'View logs (real-time)', es: 'Ver logs en vivo' }, cmd: (f, s) => `docker compose -f ${f} logs -f ${s}`, tags: 'logs tail follow' },
-  { desc: { en: 'Prune everything', es: 'Limpieza profunda del sistema' }, cmd: (f, s) => `docker system prune -a --volumes`, tags: 'prune clean clear delete' }
-];
+// DOCKER LIBRARY DATA - MOVED TO libraries.js
 
 const renderDockerLibrary = (filter = '') => {
   if (!dockerLibraryGrid) return;
@@ -980,18 +963,37 @@ const renderDockerLibrary = (filter = '') => {
     item.tags.toLowerCase().includes(filter.toLowerCase())
   );
 
-  dockerLibraryGrid.innerHTML = filtered.map(item => {
+  dockerLibraryGrid.innerHTML = '';
+  filtered.forEach(item => {
     const finalCmd = typeof item.cmd === 'function' ? item.cmd(file, svc) : item.cmd;
-    return `
-      <div class="library-card">
+    const isFav = favorites.includes(item.desc.en);
+    
+    const card = document.createElement('div');
+    card.className = 'library-card';
+    card.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: start;">
         <div class="cmd-desc">${item.desc[currentLang]}</div>
-        <div class="cmd-val" onclick="copyToClipboard('${finalCmd}', this)">
-          <span>${finalCmd.length > 35 ? finalCmd.substring(0, 32) + '...' : finalCmd}</span>
-          <i data-lucide="copy" style="width: 12px; height: 12px;"></i>
-        </div>
+        <button class="star-btn ${isFav ? 'active' : ''}" title="Favorite">
+          <i data-lucide="star" ${isFav ? 'fill="currentColor"' : ''} style="width: 14px; height: 14px;"></i>
+        </button>
+      </div>
+      <div class="cmd-val">
+        <span>${finalCmd.length > 35 ? finalCmd.substring(0, 32) + '...' : finalCmd}</span>
+        <i data-lucide="copy" style="width: 12px; height: 12px;"></i>
       </div>
     `;
-  }).join('');
+    
+    const cmdVal = card.querySelector('.cmd-val');
+    cmdVal.onclick = () => copyToClipboard(finalCmd, cmdVal);
+    
+    const starBtn = card.querySelector('.star-btn');
+    starBtn.onclick = (e) => {
+      e.stopPropagation();
+      toggleFavorite(item.desc.en);
+    };
+    
+    dockerLibraryGrid.appendChild(card);
+  });
   if (window.lucide) window.lucide.createIcons();
 };
 
@@ -999,6 +1001,7 @@ const renderDockerLibrary = (filter = '') => {
 renderDockerLibrary();
 renderLibrary('git', GIT_LIBRARY, 'git-library-grid');
 renderLibrary('node', NODE_LIBRARY, 'node-library-grid');
+renderFavorites();
 renderHistory();
 
 // Search Listeners
