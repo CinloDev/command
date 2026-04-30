@@ -369,7 +369,7 @@ const renderCommands = (branch, commitMsg) => {
             <div class="command-text">${c.cmd}</div>
           </div>
           <button class="copy-btn">
-            <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
+            <i data-lucide="copy" style="width: 15px; height: 15px;"></i>
           </button>
         `;
         card.querySelector('.copy-btn').addEventListener('click', (e) => {
@@ -619,18 +619,28 @@ const renderFavorites = () => {
             <span class="module-badge module-badge-${lib.module}">${lib.module}</span>
             <div class="cmd-desc">${item.desc[currentLang]}</div>
           </div>
-          <button class="star-btn active" title="${t.titleRemoveFav}">
-            <i data-lucide="star" fill="currentColor" style="width: 14px; height: 14px;"></i>
-          </button>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="star-btn active" title="${t.titleRemoveFav}">
+              <i data-lucide="star" fill="currentColor" style="width: 16px; height: 16px;"></i>
+            </button>
+            <button class="copy-btn-vault" title="${t.btnCopy}" style="background: none; border: none; color: var(--accent-${lib.module}); cursor: pointer; padding: 4px; display: flex; align-items: center; transition: all 0.2s;">
+              <i data-lucide="copy" style="width: 24px; height: 24px;"></i>
+            </button>
+          </div>
         </div>
         <div class="cmd-val">
           <span>${finalCmd.length > 35 ? finalCmd.substring(0, 32) + '...' : finalCmd}</span>
-          <i data-lucide="copy" style="width: 12px; height: 12px;"></i>
         </div>
       `;
       
       const cmdVal = card.querySelector('.cmd-val');
       cmdVal.onclick = () => copyToClipboard(finalCmd, cmdVal);
+      
+      const copyBtn = card.querySelector('.copy-btn-vault');
+      if (copyBtn) copyBtn.onclick = (e) => {
+        e.stopPropagation();
+        copyToClipboard(finalCmd, copyBtn);
+      };
       
       const starBtn = card.querySelector('.star-btn');
       starBtn.onclick = (e) => {
@@ -691,13 +701,17 @@ const renderLibrary = (module, data, containerId, query = '') => {
     card.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: start;">
         <div class="cmd-desc">${item.desc[currentLang]}</div>
-        <button class="star-btn ${isFav ? 'active' : ''}" title="${isFav ? t.titleRemoveFav : t.titleAddFav}">
-          <i data-lucide="star" ${isFav ? 'fill="currentColor"' : ''} style="width: 14px; height: 14px;"></i>
-        </button>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="star-btn ${isFav ? 'active' : ''}" title="${isFav ? t.titleRemoveFav : t.titleAddFav}">
+            <i data-lucide="star" ${isFav ? 'fill="currentColor"' : ''} style="width: 16px; height: 16px;"></i>
+          </button>
+          <button class="copy-btn-vault" title="${t.btnCopy}" style="background: none; border: none; color: var(--accent-${module}); cursor: pointer; padding: 4px; display: flex; align-items: center; transition: all 0.2s;">
+            <i data-lucide="copy" style="width: 24px; height: 24px;"></i>
+          </button>
+        </div>
       </div>
       <div class="cmd-val">
         <span>${finalCmd.length > 35 ? finalCmd.substring(0, 32) + '...' : finalCmd}</span>
-        <i data-lucide="copy" style="width: 12px; height: 12px;"></i>
       </div>
     `;
 
@@ -705,6 +719,12 @@ const renderLibrary = (module, data, containerId, query = '') => {
     starBtn.onclick = (e) => {
       e.stopPropagation();
       toggleFavorite(item.desc.en);
+    };
+
+    const copyBtn = card.querySelector('.copy-btn-vault');
+    if (copyBtn) copyBtn.onclick = (e) => {
+      e.stopPropagation();
+      copyToClipboard(finalCmd, copyBtn);
     };
 
     const cmdVal = card.querySelector('.cmd-val');
@@ -813,7 +833,7 @@ const renderNodeCommands = () => {
         <div class="command-text">${c.cmd}</div>
       </div>
       <button class="copy-btn">
-        <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
+        <i data-lucide="copy" style="width: 15px; height: 15px;"></i>
       </button>
     `;
     card.querySelector('.copy-btn').addEventListener('click', (e) => {
@@ -867,7 +887,7 @@ nodeActionBtns.forEach(btn => {
         <div class="command-text">${cmd}</div>
       </div>
       <button class="copy-btn">
-        <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
+        <i data-lucide="copy" style="width: 15px; height: 15px;"></i>
       </button>
     `;
     card.querySelector('.copy-btn').addEventListener('click', (e) => {
@@ -909,7 +929,7 @@ const renderDockerCommands = () => {
         <div class="command-text">${c.cmd}</div>
       </div>
       <button class="copy-btn">
-        <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
+        <i data-lucide="copy" style="width: 15px; height: 15px;"></i>
       </button>
     `;
     card.querySelector('.copy-btn').addEventListener('click', (e) => {
@@ -945,7 +965,7 @@ dockerActionBtns.forEach(btn => {
         <div class="command-text">${cmd}</div>
       </div>
       <button class="copy-btn">
-        <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
+        <i data-lucide="copy" style="width: 15px; height: 15px;"></i>
       </button>
     `;
     card.querySelector('.copy-btn').addEventListener('click', (e) => {
@@ -981,18 +1001,28 @@ const renderDockerLibrary = (filter = '') => {
     card.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: start;">
         <div class="cmd-desc">${item.desc[currentLang]}</div>
-        <button class="star-btn ${isFav ? 'active' : ''}" title="${isFav ? t.titleRemoveFav : t.titleAddFav}">
-          <i data-lucide="star" ${isFav ? 'fill="currentColor"' : ''} style="width: 14px; height: 14px;"></i>
-        </button>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="star-btn ${isFav ? 'active' : ''}" title="${isFav ? t.titleRemoveFav : t.titleAddFav}">
+            <i data-lucide="star" ${isFav ? 'fill="currentColor"' : ''} style="width: 16px; height: 16px;"></i>
+          </button>
+          <button class="copy-btn-vault" title="${t.btnCopy}" style="background: none; border: none; color: var(--accent-docker); cursor: pointer; padding: 4px; display: flex; align-items: center; transition: all 0.2s;">
+            <i data-lucide="copy" style="width: 24px; height: 24px;"></i>
+          </button>
+        </div>
       </div>
       <div class="cmd-val">
         <span>${finalCmd.length > 35 ? finalCmd.substring(0, 32) + '...' : finalCmd}</span>
-        <i data-lucide="copy" style="width: 12px; height: 12px;"></i>
       </div>
     `;
     
     const cmdVal = card.querySelector('.cmd-val');
     cmdVal.onclick = () => copyToClipboard(finalCmd, cmdVal);
+    
+    const copyBtn = card.querySelector('.copy-btn-vault');
+    if (copyBtn) copyBtn.onclick = (e) => {
+      e.stopPropagation();
+      copyToClipboard(finalCmd, copyBtn);
+    };
     
     const starBtn = card.querySelector('.star-btn');
     starBtn.onclick = (e) => {
