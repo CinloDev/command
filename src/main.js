@@ -664,6 +664,7 @@ const renderFavorites = () => {
          const svc = dockerServiceInput?.value?.trim() || 'api';
          finalCmd = typeof item.cmd === 'function' ? item.cmd(file, svc) : item.cmd;
       }
+      const isMultiline = finalCmd.includes('\n') || lib.module === 'personal';
       card.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: start;">
           <div style="display: flex; flex-direction: column; gap: 6px;">
@@ -679,8 +680,8 @@ const renderFavorites = () => {
             </button>
           </div>
         </div>
-        <div class="cmd-val">
-          <span>${finalCmd.length > 35 ? finalCmd.substring(0, 32) + '...' : finalCmd}</span>
+        <div class="cmd-val" ${isMultiline ? 'style="white-space: pre-wrap; font-size: 0.8rem; line-height: 1.4; max-height: 150px; overflow-y: auto; text-align: left;"' : ''}>
+          <span>${isMultiline ? finalCmd : (finalCmd.length > 35 ? finalCmd.substring(0, 32) + '...' : finalCmd)}</span>
         </div>
       `;
       const cmdVal = card.querySelector('.cmd-val');
@@ -1017,12 +1018,21 @@ if (modalConfirmBtn) {
 }
 if (modalCancelBtn) modalCancelBtn.onclick = hideModal;
 
+const hexToRgb = (hex) => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : null;
+};
+
 const applyPersonalTheme = () => {
   const color = personalThemeColor;
+  const rgb = hexToRgb(color);
   document.documentElement.style.setProperty('--accent-personal', color);
+  if (rgb) document.documentElement.style.setProperty('--accent-personal-rgb', rgb);
+  
   if (currentActiveModule === 'personal' || (currentActiveModule === 'favs' && favoriteOrder[0] === 'personal')) {
     document.body.style.setProperty('--accent-primary', color);
-    document.body.style.setProperty('--glow-shadow', `0 0 20px ${color}33`);
+    document.body.style.setProperty('--glow-shadow', `0 0 10px ${color}1A`);
+    document.documentElement.style.setProperty('--personal-hover-bg', 'rgba(0, 0, 0, 0.5)');
   }
 };
 
@@ -1057,19 +1067,60 @@ const renderPersonalLibrary = () => {
     card.className = 'library-card';
     const iconName = item.icon || 'lock';
     let finalCmd = (item.cmd || "").replace(/{branch}/g, branchNameInput.value).replace(/{base}/g, baseBranchInput.value);
+    
+    const lines = finalCmd.split('\n').filter(l => l.trim().length > 0);
+    const isMultiline = lines.length > 1;
+
     card.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: start;">
-        <div style="display: flex; align-items: center; gap: 10px;"><div style="color: ${accentColor}; display: flex; align-items: center;"><i data-lucide="${iconName}" style="width: 18px; height: 18px;"></i></div><div class="cmd-desc">${item.desc}</div></div>
+      <div class="personal-card-header" style="display: flex; justify-content: space-between; align-items: center; cursor: ${isMultiline ? 'pointer' : 'default'}">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="color: ${accentColor}; display: flex; align-items: center;">
+            <i data-lucide="${iconName}" style="width: 18px; height: 18px;"></i>
+          </div>
+          <div class="cmd-desc" style="font-weight: 600;">${item.desc}</div>
+          ${isMultiline ? `<i data-lucide="chevron-down" class="expand-icon" style="width: 14px; height: 14px; opacity: 0.5; color: ${accentColor};"></i>` : ''}
+        </div>
         <div style="display: flex; gap: 8px; align-items: center;">
-          <button class="edit-btn" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 4px; display: flex; align-items: center; transition: all 0.2s;"><i data-lucide="pencil" style="width: 16px; height: 16px;"></i></button>
-          <button class="delete-btn" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 4px; display: flex; align-items: center; transition: all 0.2s;"><i data-lucide="trash-2" style="width: 16px; height: 16px;"></i></button>
-          <button class="copy-btn-vault" title="${t.btnCopy}" style="background: none; border: none; color: ${accentColor}; cursor: pointer; padding: 4px; display: flex; align-items: center; transition: all 0.2s;"><i data-lucide="copy" style="width: 24px; height: 24px;"></i></button>
+          <button class="edit-btn" title="Edit" style="color: var(--text-secondary)"><i data-lucide="pencil" style="width: 16px; height: 16px;"></i></button>
+          <button class="delete-btn" title="Delete" style="color: var(--text-secondary)"><i data-lucide="trash-2" style="width: 16px; height: 16px;"></i></button>
+          <button class="copy-all-btn" title="Copy All" style="color: ${accentColor}"><i data-lucide="copy" style="width: 18px; height: 18px;"></i></button>
         </div>
       </div>
-      <div class="cmd-val"><span style="color: ${accentColor}">${finalCmd.length > 35 ? finalCmd.substring(0, 32) + '...' : finalCmd}</span></div>
+      <div class="personal-card-content ${isMultiline ? 'collapsed' : ''}" style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+        ${lines.map(line => `
+          <div class="sub-cmd-row" data-cmd="${line.replace(/"/g, '&quot;')}" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.15); padding: 6px 10px; border-radius: 6px; border-left: 2px solid ${accentColor};">
+            <span style="font-family: monospace; font-size: 0.8rem; color: ${accentColor}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 85%; text-align: left;">${line}</span>
+            <button class="copy-sub-btn" style="background: none; border: none; color: ${accentColor}; cursor: pointer; padding: 4px; display: flex; align-items: center; opacity: 0.6;"><i data-lucide="clipboard" style="width: 14px; height: 14px;"></i></button>
+          </div>
+        `).join('')}
+      </div>
     `;
-    card.querySelector('.edit-btn').onclick = () => startEditing(index);
-    card.querySelector('.delete-btn').onclick = () => {
+
+    // Header Toggle
+    if (isMultiline) {
+      const header = card.querySelector('.personal-card-header');
+      const content = card.querySelector('.personal-card-content');
+      header.onclick = (e) => {
+        if (e.target.closest('button')) return;
+        header.classList.toggle('expanded');
+        content.classList.toggle('collapsed');
+      };
+    }
+
+    // Individual Copy
+    card.querySelectorAll('.sub-cmd-row').forEach(row => {
+      const cmd = row.dataset.cmd;
+      row.onclick = () => copyToClipboard(cmd, row);
+      row.querySelector('.copy-sub-btn').onclick = (e) => {
+        e.stopPropagation();
+        copyToClipboard(cmd, row.querySelector('.copy-sub-btn'));
+      };
+    });
+
+    // Main Actions
+    card.querySelector('.edit-btn').onclick = (e) => { e.stopPropagation(); startEditing(index); };
+    card.querySelector('.delete-btn').onclick = (e) => {
+      e.stopPropagation();
       showConfirm(t.modalConfirmTitle, t.modalConfirmDelete, () => {
         personalCommands.splice(index, 1);
         localStorage.setItem('personalCommands', JSON.stringify(personalCommands));
@@ -1078,10 +1129,11 @@ const renderPersonalLibrary = () => {
         showToast('Command deleted', 'check');
       });
     };
-    const cmdVal = card.querySelector('.cmd-val');
-    cmdVal.onclick = () => copyToClipboard(finalCmd, cmdVal);
-    const copyBtn = card.querySelector('.copy-btn-vault');
-    if (copyBtn) copyBtn.onclick = (e) => { e.stopPropagation(); copyToClipboard(finalCmd, copyBtn); };
+    card.querySelector('.copy-all-btn').onclick = (e) => {
+      e.stopPropagation();
+      copyToClipboard(finalCmd, card.querySelector('.copy-all-btn'));
+    };
+
     personalLibraryGrid.appendChild(card);
   });
   if (window.lucide) window.lucide.createIcons();
