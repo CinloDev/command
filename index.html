@@ -12,6 +12,22 @@
   </head>
   <body class="theme-git">
     <div id="toast-container"></div>
+    
+    <!-- Custom Confirmation Modal -->
+    <div id="custom-modal-overlay" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <i id="modal-icon" data-lucide="alert-circle" style="width: 32px; height: 32px;"></i>
+          <h3 id="txt-modal-title">Are you sure?</h3>
+        </div>
+        <p id="txt-modal-message">This action cannot be undone.</p>
+        <div class="modal-actions">
+          <button id="modal-cancel-btn" class="secondary-btn">Cancel</button>
+          <button id="modal-confirm-btn" class="secondary-btn confirm-btn">Confirm</button>
+        </div>
+      </div>
+    </div>
+
     <div class="container">
       <header>
         <div class="lang-switcher">
@@ -41,6 +57,10 @@
           <i data-lucide="star" style="width: 20px; height: 20px;"></i>
           <span>Favs</span>
         </button>
+        <button class="nav-item" data-module="personal">
+          <i data-lucide="lock" style="width: 20px; height: 20px;"></i>
+          <span id="txt-nav-personal">Personal</span>
+        </button>
       </nav>
 
       <main class="task-deck">
@@ -59,6 +79,60 @@
             <!-- Favs injected here -->
           </div>
         </div>
+
+        <!-- Module Personal (Private Vault) -->
+        <div id="module-personal" class="module-content">
+          <div class="library-header personal-header" style="margin-bottom: 30px;">
+            <div style="display: flex; flex-direction: column; gap: 4px; text-align: left;">
+              <h2 id="lbl-personal-vault" class="input-label" style="margin: 0;">Private Vault</h2>
+              <p id="txt-personal-subtitle" style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">Your personal commands saved locally in this browser.</p>
+            </div>
+            <div class="theme-picker-container" style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 12px; border: 1px solid var(--card-border); align-self: flex-start;">
+              <label for="personal-theme-color" style="font-size: 0.7rem; color: var(--text-secondary); cursor: pointer; margin: 0;">Theme</label>
+              <input type="color" id="personal-theme-color" value="#a855f7" style="width: 24px; height: 24px; border: none; background: none; cursor: pointer; padding: 0; border-radius: 4px; overflow: hidden; display: block;">
+            </div>
+          </div>
+          
+          <div class="custom-command-form" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--card-border); padding: 24px; border-radius: 16px; margin-bottom: 40px;">
+            <div class="input-row" style="margin-bottom: 20px;">
+              <div class="input-group">
+                <label class="input-label" id="lbl-custom-desc">Description</label>
+                <input type="text" id="custom-cmd-desc" placeholder="e.g. My private deploy script" autocomplete="off">
+              </div>
+              <div class="input-group">
+                <label class="input-label" id="lbl-custom-val">Command</label>
+                <input type="text" id="custom-cmd-val" placeholder="e.g. sh deploy.sh --env prod" autocomplete="off">
+              </div>
+            </div>
+            
+            <div style="margin-bottom: 24px;">
+              <label class="input-label" id="lbl-custom-icon">Select Icon</label>
+              <div id="icon-picker" class="icon-picker">
+                <button class="icon-opt active" data-icon="lock"><i data-lucide="lock"></i></button>
+                <button class="icon-opt" data-icon="terminal"><i data-lucide="terminal"></i></button>
+                <button class="icon-opt" data-icon="package"><i data-lucide="package"></i></button>
+                <button class="icon-opt" data-icon="zap"><i data-lucide="zap"></i></button>
+                <button class="icon-opt" data-icon="database"><i data-lucide="database"></i></button>
+                <button class="icon-opt" data-icon="wrench"><i data-lucide="wrench"></i></button>
+                <button class="icon-opt" data-icon="git-branch"><i data-lucide="git-branch"></i></button>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+              <button id="cancel-custom-cmd-btn" class="secondary-btn" style="display: none;">
+                <span id="txt-cancel-edit">Cancel</span>
+              </button>
+              <button id="add-custom-cmd-btn" class="secondary-btn" style="background: var(--accent-primary); color: #000; font-weight: 600; border: none;">
+                <i data-lucide="plus"></i>
+                <span id="txt-add-command">Add Command</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="personal-library-grid" class="library-grid">
+            <!-- Custom commands injected here -->
+          </div>
+        </div>
         <div id="module-git" class="module-content active">
             <div class="workflow-selector">
               <button class="wf-btn active" data-wf="new" id="btn-wf-new"><span>New Branch</span></button>
@@ -67,12 +141,23 @@
 
             <div class="input-row">
               <div class="input-group">
-                <label class="input-label" id="lbl-task-title" for="task-title">Task Title / Branch</label>
-                <div style="position: relative;">
-                  <input type="text" id="task-title" placeholder="e.g. Add user authentication flow" autocomplete="off" style="padding-right: 50px;">
-                  <button id="translate-btn" class="translate-trigger" title="Translate Title">
-                    <i data-lucide="languages"></i>
-                  </button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                  <label class="input-label" id="lbl-task-title" for="task-title" style="margin-bottom: 0;">Task Title / Branch</label>
+                  <label class="auto-translate-control">
+                    <input type="checkbox" id="auto-translate-check">
+                    <span id="txt-auto-translate">Auto-translate</span>
+                  </label>
+                </div>
+                <div class="input-with-actions">
+                  <input type="text" id="task-title" placeholder="e.g. Add user authentication flow" autocomplete="off">
+                  <div class="input-actions-group">
+                    <button id="clear-task-btn" class="input-action-btn" title="Clear Title">
+                      <i data-lucide="x"></i>
+                    </button>
+                    <button id="translate-btn" class="input-action-btn" title="Translate Title">
+                      <i data-lucide="languages"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
               <div class="input-group" id="base-branch-group">

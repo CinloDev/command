@@ -17,6 +17,7 @@ const baseBranchGroup = document.getElementById('base-branch-group');
 const baseBranchInput = document.getElementById('base-branch');
 const langBtn = document.getElementById('lang-btn');
 const translateBtn = document.getElementById('translate-btn');
+const clearTaskBtn = document.getElementById('clear-task-btn');
 const resetBranchBtn = document.getElementById('reset-branch');
 const manualNotice = document.getElementById('manual-notice');
 const toastContainer = document.getElementById('toast-container');
@@ -31,6 +32,8 @@ const dockerSearchInput = document.getElementById('docker-search');
 const gitSearchInput = document.getElementById('git-search');
 const nodeSearchInput = document.getElementById('node-search');
 const gitParamInput = document.getElementById('git-param');
+const autoTranslateCheck = document.getElementById('auto-translate-check');
+const txtAutoTranslate = document.getElementById('txt-auto-translate');
 
 // Docker Inputs
 const dockerServiceInput = document.getElementById('docker-service-input');
@@ -41,11 +44,21 @@ const dockerPortInput = document.getElementById('docker-port-input');
 const dockerActionBtns = document.querySelectorAll('.docker-action-btn');
 const dockerCommandList = document.getElementById('docker-command-list');
 const dockerOutput = document.getElementById('docker-output');
+const addCustomCmdBtn = document.getElementById('add-custom-cmd-btn');
+const customCmdDescInput = document.getElementById('custom-cmd-desc');
+const customCmdValInput = document.getElementById('custom-cmd-val');
+const cancelCustomCmdBtn = document.getElementById('cancel-custom-cmd-btn');
+const txtCancelEdit = document.getElementById('txt-cancel-edit');
+const personalLibraryGrid = document.getElementById('personal-library-grid');
+const personalThemeColorInput = document.getElementById('personal-theme-color');
 
 let taskHistory = JSON.parse(localStorage.getItem('taskHistory')) || [];
 let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-let favoriteOrder = JSON.parse(localStorage.getItem('favoriteOrder')) || ['git', 'node', 'docker'];
+let personalCommands = JSON.parse(localStorage.getItem('personalCommands')) || [];
+let favoriteOrder = JSON.parse(localStorage.getItem('favoriteOrder')) || ['git', 'node', 'docker', 'personal'];
+let personalThemeColor = localStorage.getItem('personalThemeColor') || '#a855f7';
 let isTerminalMode = false;
+let editingIndex = null;
 
 let currentType = 'feature';
 let currentWorkflow = 'new';
@@ -53,6 +66,12 @@ let isManualBranch = false;
 let isManualCommit = false;
 let isManualType = false;
 let currentActiveModule = 'git';
+let autoTranslateEnabled = localStorage.getItem('autoTranslate') === 'true' || false;
+
+// Initialize toggle state
+if (autoTranslateCheck) {
+  autoTranslateCheck.checked = autoTranslateEnabled;
+}
 
 const updateTranslations = () => {
   const t = translations[currentLang];
@@ -97,6 +116,16 @@ const updateTranslations = () => {
   
   document.getElementById('lbl-favs-vault').textContent = t.lblFavsVault;
   document.getElementById('txt-favs-subtitle').textContent = t.subtitleFavs;
+  if (txtAutoTranslate) txtAutoTranslate.textContent = t.lblAutoTranslate;
+  
+  // Personal Labels
+  document.getElementById('lbl-personal-vault').textContent = t.lblPersonalVault;
+  document.getElementById('txt-personal-subtitle').textContent = t.subtitlePersonal;
+  document.getElementById('lbl-custom-desc').textContent = t.lblCustomDesc;
+  document.getElementById('lbl-custom-val').textContent = t.lblCustomVal;
+  document.getElementById('txt-add-command').textContent = t.btnAddCommand;
+  if (txtCancelEdit) txtCancelEdit.textContent = t.btnCancel;
+  document.getElementById('txt-nav-personal').textContent = t.navPersonal;
   
   // Explicit ID based label updates
   const labelTask = document.getElementById('lbl-task-title');
@@ -178,7 +207,12 @@ const sanitizeBranchName = (text) => {
     .replace(/[^\w\d\/\-._]/g, '');
 };
 
-
+const isSpanishText = (text) => {
+  if (!text) return false;
+  const hasSpanishChars = /[áéíóúüñ]/i.test(text);
+  const commonSpanishWords = /\b(el|la|los|las|de|con|para|por|falla|error|inicio|migrar|nuevo|sistema|visual|reemplazar|unificar|crear|borrar|actualizar|quitar)\b/i.test(text);
+  return hasSpanishChars || commonSpanishWords;
+};
 
 const translateTitle = async (e) => {
   if (e) e.preventDefault();
@@ -187,9 +221,7 @@ const translateTitle = async (e) => {
 
   translateBtn.classList.add('loading');
   
-  const hasSpanishChars = /[áéíóúüñ]/i.test(text);
-  const commonSpanishWords = /\b(el|la|los|las|de|con|para|por|falla|error|inicio|migrar|nuevo|sistema|visual|reemplazar|unificar)\b/i.test(text);
-  const isSpanish = hasSpanishChars || commonSpanishWords;
+  const isSpanish = isSpanishText(text);
   const langPair = isSpanish ? 'es|en' : 'en|es';
 
   try {
@@ -211,12 +243,60 @@ const translateTitle = async (e) => {
 
 translateBtn.addEventListener('click', translateTitle);
 
+if (autoTranslateCheck) {
+  autoTranslateCheck.addEventListener('change', (e) => {
+    autoTranslateEnabled = e.target.checked;
+    localStorage.setItem('autoTranslate', autoTranslateEnabled);
+  });
+}
+
+if (clearTaskBtn) {
+  clearTaskBtn.addEventListener('click', () => {
+    taskTitleInput.value = '';
+    taskTitleInput.focus();
+    updateUI();
+  });
+}
+
+// Global Enter Key Handler for inputs
+const handleMainInputEnter = async (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    
+    if (e.target.id === 'task-title') {
+      const text = taskTitleInput.value.trim();
+      if (text) {
+        isManualBranch = false;
+        isManualType = false;
+        isManualCommit = false;
+        updateUI();
+        
+        if (autoTranslateEnabled && isSpanishText(text)) {
+           await translateTitle();
+        }
+        copyBranchBtn.click();
+      }
+    } else if (e.target.id === 'branch-name-input') {
+      copyBranchBtn.click();
+    } else if (e.target.id === 'base-branch') {
+      updateUI();
+    } else if (e.target.id === 'commit-msg-input') {
+      copyToClipboard(commitMsgInput.value, commitMsgInput);
+    }
+    e.target.blur();
+  }
+};
+
+taskTitleInput.addEventListener('keydown', handleMainInputEnter);
+branchNameInput.addEventListener('keydown', handleMainInputEnter);
+commitMsgInput.addEventListener('keydown', handleMainInputEnter);
+baseBranchInput.addEventListener('keydown', handleMainInputEnter);
+
 const updateUI = () => {
   const title = taskTitleInput.value.trim();
   if (title.length > 0) {
     outputSection.classList.add('visible');
     
-    // SMART TYPE DETECTION
     if (!isManualType && !isManualBranch && title.length > 3) {
       const detected = detectType(title);
       if (detected !== currentType) {
@@ -225,6 +305,10 @@ const updateUI = () => {
           btn.classList.toggle('active', btn.dataset.type === currentType);
         });
       }
+    }
+
+    if (translateBtn) {
+      translateBtn.classList.toggle('active-mode', autoTranslateEnabled);
     }
 
     if (!isManualBranch) {
@@ -252,10 +336,10 @@ const updateUI = () => {
     validateBranch(branchNameInput.value);
     renderCommands(branchNameInput.value, commitMsgInput.value);
     
-    // Refresh vaults and favorites to keep branches in sync
     if (currentActiveModule === 'git') renderLibrary('git', GIT_LIBRARY, 'git-library-grid', gitSearchInput.value);
     if (currentActiveModule === 'node') renderLibrary('node', NODE_LIBRARY, 'node-library-grid', nodeSearchInput.value);
     if (currentActiveModule === 'docker') renderDockerLibrary(dockerSearchInput.value);
+    if (currentActiveModule === 'personal') renderPersonalLibrary();
     renderFavorites();
   } else {
     outputSection.classList.remove('visible');
@@ -401,17 +485,11 @@ const detectType = (text) => {
 window.copyToClipboard = (text, btn) => {
   navigator.clipboard.writeText(text).then(() => {
     const t = translations[currentLang];
-    
-    // Save to history if it's a branch or full command
     if (text.includes('/') || text.includes('git')) {
       const title = taskTitleInput.value.trim();
       if (title) saveToHistory(title, currentType);
     }
-
-    // Toast Notification
     showToast(t.copied, 'copy');
-
-    const originalContent = btn.innerHTML;
     btn.classList.add('copied');
     setTimeout(() => {
       btn.classList.remove('copied');
@@ -422,24 +500,18 @@ window.copyToClipboard = (text, btn) => {
 const showToast = (message, iconType = 'check') => {
   const toast = document.createElement('div');
   toast.className = 'toast';
-  
   const iconName = iconType === 'copy' ? 'clipboard-check' : 'check-circle';
-  
   toast.innerHTML = `
     <i data-lucide="${iconName}"></i>
     <span>${message}</span>
   `;
-  
   toastContainer.appendChild(toast);
   if (window.lucide) window.lucide.createIcons();
-  
   setTimeout(() => {
     toast.classList.add('removing');
     setTimeout(() => toast.remove(), 300);
   }, 3000);
 };
-
-// BORDER REVEAL LOGIC REMOVED
 
 taskTitleInput.addEventListener('input', updateUI);
 commitMsgInput.addEventListener('input', autoResizeCommit);
@@ -484,14 +556,11 @@ if (toggleTerminalBtn) {
   });
 }
 
-// HISTORY LOGIC
 const saveToHistory = (title, type) => {
   const existing = taskHistory.findIndex(h => h.title === title);
   if (existing !== -1) taskHistory.splice(existing, 1);
-  
   taskHistory.unshift({ title, type, date: new Date().toISOString() });
   taskHistory = taskHistory.slice(0, 5);
-  
   localStorage.setItem('taskHistory', JSON.stringify(taskHistory));
   renderHistory();
 };
@@ -499,7 +568,6 @@ const saveToHistory = (title, type) => {
 const renderHistory = () => {
   if (!taskHistoryContainer) return;
   taskHistoryContainer.innerHTML = '';
-  
   taskHistory.forEach(h => {
     const item = document.createElement('div');
     item.className = 'history-item';
@@ -515,24 +583,16 @@ const renderHistory = () => {
 window.loadHistoryItem = (title, type) => {
   taskTitleInput.value = title;
   currentType = type;
-  
-  // First, generate the content as if it were auto
   isManualBranch = false;
   isManualCommit = false;
   isManualType = true;
   updateUI();
-  
-  // THEN, lock it to manual so the user can see it's from history
   isManualBranch = true;
   isManualCommit = true;
-
   typeButtons.forEach(btn => {
     btn.classList.toggle('active', btn.dataset.type === type);
   });
-
-  // Final render with the manual flags active
   renderCommands(branchNameInput.value, commitMsgInput.value);
-  
   if (resetBranchBtn) resetBranchBtn.style.display = 'flex';
   if (manualNotice) manualNotice.style.display = 'flex';
 };
@@ -545,8 +605,6 @@ const toggleFavorite = (descEn) => {
     favorites.splice(index, 1);
   }
   localStorage.setItem('favorites', JSON.stringify(favorites));
-  
-  // Re-render to show update
   renderLibrary('git', GIT_LIBRARY, 'git-library-grid', gitSearchInput.value);
   renderLibrary('node', NODE_LIBRARY, 'node-library-grid', nodeSearchInput.value);
   renderDockerLibrary(dockerSearchInput.value);
@@ -567,9 +625,7 @@ const renderFavorites = () => {
   const container = document.getElementById('favs-library-grid');
   const controls = document.getElementById('fav-order-controls');
   if (!container) return;
-  
   const t = translations[currentLang];
-  
   if (controls) {
     controls.innerHTML = `
       <span style="font-size: 0.65rem; color: var(--text-secondary); align-self: center; margin-right: 4px;">${t.lblPriority}:</span>
@@ -582,25 +638,21 @@ const renderFavorites = () => {
       `).join('')}
     `;
   }
-
   container.innerHTML = '';
-  
   const allLibraries = [
     { module: 'git', data: GIT_LIBRARY },
     { module: 'node', data: NODE_LIBRARY },
-    { module: 'docker', data: DOCKER_LIBRARY }
+    { module: 'docker', data: DOCKER_LIBRARY },
+    { module: 'personal', data: personalCommands.map(c => ({ desc: { en: c.desc, es: c.desc }, cmd: c.cmd })) }
   ].sort((a, b) => favoriteOrder.indexOf(a.module) - favoriteOrder.indexOf(b.module));
   
   let hasFavs = false;
-  
   allLibraries.forEach(lib => {
     const favs = lib.data.filter(item => favorites.includes(item.desc.en));
     if (favs.length > 0) hasFavs = true;
-    
     favs.forEach(item => {
       const card = document.createElement('div');
       card.className = `library-card fav-card-${lib.module}`;
-      
       let finalCmd = '';
       if (lib.module === 'git') {
          const globalParam = gitParamInput ? gitParamInput.value : '';
@@ -612,7 +664,6 @@ const renderFavorites = () => {
          const svc = dockerServiceInput?.value?.trim() || 'api';
          finalCmd = typeof item.cmd === 'function' ? item.cmd(file, svc) : item.cmd;
       }
-
       card.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: start;">
           <div style="display: flex; flex-direction: column; gap: 6px;">
@@ -632,27 +683,15 @@ const renderFavorites = () => {
           <span>${finalCmd.length > 35 ? finalCmd.substring(0, 32) + '...' : finalCmd}</span>
         </div>
       `;
-      
       const cmdVal = card.querySelector('.cmd-val');
       cmdVal.onclick = () => copyToClipboard(finalCmd, cmdVal);
-      
       const copyBtn = card.querySelector('.copy-btn-vault');
-      if (copyBtn) copyBtn.onclick = (e) => {
-        e.stopPropagation();
-        copyToClipboard(finalCmd, copyBtn);
-      };
-      
+      if (copyBtn) copyBtn.onclick = (e) => { e.stopPropagation(); copyToClipboard(finalCmd, copyBtn); };
       const starBtn = card.querySelector('.star-btn');
-      starBtn.onclick = (e) => {
-        e.stopPropagation();
-        toggleFavorite(item.desc.en);
-        renderFavorites();
-      };
-      
+      starBtn.onclick = (e) => { e.stopPropagation(); toggleFavorite(item.desc.en); renderFavorites(); };
       container.appendChild(card);
     });
   });
-  
   if (!hasFavs) {
     container.innerHTML = `
       <div class="empty-state" style="grid-column: 1 / -1; padding: 40px; border: 1px dashed var(--card-border); border-radius: 12px;">
@@ -661,43 +700,25 @@ const renderFavorites = () => {
       </div>
     `;
   }
-
   if (window.lucide) window.lucide.createIcons();
 };
-
-// LIBRARIES (VAULTS)
-// LIBRARIES (VAULTS) - MOVED TO libraries.js
 
 const renderLibrary = (module, data, containerId, query = '') => {
   const container = document.getElementById(containerId);
   if (!container) return;
-  
   const t = translations[currentLang];
   const globalParam = (module === 'git' && gitParamInput) ? gitParamInput.value : '';
-  
   const filtered = data.filter(item => {
     const q = query.toLowerCase();
-    const testCmd = typeof item.cmd === 'function' 
-      ? item.cmd(globalParam, baseBranchInput.value, branchNameInput.value) 
-      : item.cmd;
-    
-    return item.desc.en.toLowerCase().includes(q) || 
-           item.desc.es.toLowerCase().includes(q) || 
-           testCmd.toLowerCase().includes(q) || 
-           (item.tags && item.tags.toLowerCase().includes(q));
+    const testCmd = typeof item.cmd === 'function' ? item.cmd(globalParam, baseBranchInput.value, branchNameInput.value) : item.cmd;
+    return item.desc.en.toLowerCase().includes(q) || item.desc.es.toLowerCase().includes(q) || testCmd.toLowerCase().includes(q) || (item.tags && item.tags.toLowerCase().includes(q));
   });
-
   container.innerHTML = '';
   filtered.forEach((item) => {
     const card = document.createElement('div');
     card.className = 'library-card';
-    
-    const finalCmd = typeof item.cmd === 'function' 
-      ? item.cmd(globalParam, baseBranchInput.value, branchNameInput.value) 
-      : item.cmd;
-    
+    const finalCmd = typeof item.cmd === 'function' ? item.cmd(globalParam, baseBranchInput.value, branchNameInput.value) : item.cmd;
     const isFav = favorites.includes(item.desc.en);
-    
     card.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: start;">
         <div class="cmd-desc">${item.desc[currentLang]}</div>
@@ -714,25 +735,14 @@ const renderLibrary = (module, data, containerId, query = '') => {
         <span>${finalCmd.length > 35 ? finalCmd.substring(0, 32) + '...' : finalCmd}</span>
       </div>
     `;
-
     const starBtn = card.querySelector('.star-btn');
-    starBtn.onclick = (e) => {
-      e.stopPropagation();
-      toggleFavorite(item.desc.en);
-    };
-
+    starBtn.onclick = (e) => { e.stopPropagation(); toggleFavorite(item.desc.en); };
     const copyBtn = card.querySelector('.copy-btn-vault');
-    if (copyBtn) copyBtn.onclick = (e) => {
-      e.stopPropagation();
-      copyToClipboard(finalCmd, copyBtn);
-    };
-
+    if (copyBtn) copyBtn.onclick = (e) => { e.stopPropagation(); copyToClipboard(finalCmd, copyBtn); };
     const cmdVal = card.querySelector('.cmd-val');
     cmdVal.onclick = () => copyToClipboard(finalCmd, cmdVal);
-    
     container.appendChild(card);
   });
-
   if (window.lucide) window.lucide.createIcons();
 };
 
@@ -741,7 +751,6 @@ workflowButtons.forEach(btn => {
     workflowButtons.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentWorkflow = btn.dataset.wf;
-    
     if (currentWorkflow === 'recreate') {
       baseBranchGroup.style.display = 'flex';
       document.querySelector('.task-types').style.display = 'none';
@@ -759,7 +768,6 @@ workflowButtons.forEach(btn => {
 
 baseBranchInput.addEventListener('input', updateUI);
 
-// MODULE SWITCHING
 const navItems = document.querySelectorAll('.nav-item');
 const moduleContents = document.querySelectorAll('.module-content');
 
@@ -767,30 +775,19 @@ navItems.forEach(item => {
   item.addEventListener('click', () => {
     const module = item.dataset.module;
     const targetModule = document.getElementById(`module-${module}`);
-
     if (!targetModule || item.classList.contains('active')) return;
-
-    // Update state
     currentActiveModule = module;
-
-    // Update Nav Buttons
     navItems.forEach(n => n.classList.remove('active'));
     item.classList.add('active');
-    
-    // Switch Content
-    moduleContents.forEach(m => {
-      m.classList.remove('active');
-      m.style.display = 'none';
-    });
-    
+    moduleContents.forEach(m => { m.classList.remove('active'); m.style.display = 'none'; });
     targetModule.style.display = 'block';
-    setTimeout(() => {
-      targetModule.classList.add('active');
-    }, 10);
-    
-    // Update Theme and Title/Subtitle
+    setTimeout(() => { targetModule.classList.add('active'); }, 10);
     document.body.className = module === 'git' ? 'theme-git' : `theme-${module}`;
-    // INITIALIZE
+    if (module === 'personal' || (module === 'favs' && favoriteOrder[0] === 'personal')) {
+      applyPersonalTheme();
+    } else {
+      resetDynamicThemes();
+    }
     updateTranslations();
     updateUI();
     if (window.lucide) window.lucide.createIcons();
@@ -799,7 +796,6 @@ navItems.forEach(item => {
   });
 });
 
-// NODE MODULE LOGIC
 const nodePkgInput = document.getElementById('node-pkg-input');
 const nodeTypeBtns = document.querySelectorAll('.node-type-btn');
 const nodeMgrBtns = document.querySelectorAll('.node-mgr-btn');
@@ -813,16 +809,13 @@ let currentMgr = 'npm';
 const renderNodeCommands = () => {
   const pkgs = nodePkgInput.value.trim();
   let commands = [];
-
   if (pkgs) {
     let baseCmd = currentMgr === 'npm' ? 'npm install' : (currentMgr === 'yarn' ? 'yarn add' : 'pnpm add');
     if (currentNodeType === 'dev') baseCmd += ' -D';
     if (currentNodeType === 'glob') baseCmd += (currentMgr === 'npm' ? ' -g' : ' --global');
     commands.push({ label: 'Install Dependencies', cmd: `${baseCmd} ${pkgs}` });
   }
-
   nodeOutput.classList.toggle('visible', commands.length > 0);
-  
   nodeCommandList.innerHTML = '';
   commands.forEach(c => {
     const card = document.createElement('div');
@@ -836,16 +829,13 @@ const renderNodeCommands = () => {
         <i data-lucide="copy" style="width: 15px; height: 15px;"></i>
       </button>
     `;
-    card.querySelector('.copy-btn').addEventListener('click', (e) => {
-      copyToClipboard(c.cmd, e.currentTarget);
-    });
+    card.querySelector('.copy-btn').addEventListener('click', (e) => { copyToClipboard(c.cmd, e.currentTarget); });
     nodeCommandList.appendChild(card);
   });
   if (window.lucide) window.lucide.createIcons();
 };
 
 nodePkgInput.addEventListener('input', renderNodeCommands);
-
 nodeTypeBtns.forEach(btn => {
   btn.addEventListener('click', () => {
     nodeTypeBtns.forEach(b => b.classList.remove('active'));
@@ -868,16 +858,13 @@ nodeActionBtns.forEach(btn => {
   btn.addEventListener('click', () => {
     let cmd = btn.dataset.cmd;
     const label = btn.textContent;
-    
-    // Transform command based on manager
     if (currentMgr !== 'npm') {
       if (cmd === 'npm init -y') cmd = `${currentMgr} init -y`;
       if (cmd === 'npm install') cmd = `${currentMgr} install`;
-      if (cmd === 'npm audit fix') cmd = currentMgr === 'pnpm' ? 'pnpm audit --fix' : 'npm audit fix'; // Yarn audit fix is complex
+      if (cmd === 'npm audit fix') cmd = currentMgr === 'pnpm' ? 'pnpm audit --fix' : 'npm audit fix';
       if (cmd === 'npm version patch') cmd = `${currentMgr} version patch`;
       if (cmd === 'npm run dev') cmd = currentMgr === 'yarn' ? 'yarn dev' : 'pnpm dev';
     }
-    
     const card = document.createElement('div');
     card.className = 'command-card';
     card.style.animation = 'slide-up 0.3s ease-out';
@@ -890,35 +877,25 @@ nodeActionBtns.forEach(btn => {
         <i data-lucide="copy" style="width: 15px; height: 15px;"></i>
       </button>
     `;
-    card.querySelector('.copy-btn').addEventListener('click', (e) => {
-      copyToClipboard(cmd, e.currentTarget);
-    });
+    card.querySelector('.copy-btn').addEventListener('click', (e) => { copyToClipboard(cmd, e.currentTarget); });
     nodeCommandList.prepend(card);
     nodeOutput.classList.add('visible');
     if (window.lucide) window.lucide.createIcons();
   });
 });
 
-// DOCKER MODULE LOGIC
 const renderDockerCommands = () => {
   const img = dockerImgInput.value.trim();
   const ports = dockerPortInput.value.trim();
   const svc = dockerServiceInput.value.trim() || 'api';
   const file = dockerFileInput.value.trim() || 'docker-compose.dev.yml';
   let commands = [];
-
   if (img) {
     commands.push({ label: 'Build Image', cmd: `docker build -t ${img} .` });
-    if (ports) {
-      commands.push({ label: 'Run Container', cmd: `docker run -d -p ${ports} --name ${img.split(':')[0]} ${img}` });
-    }
+    if (ports) { commands.push({ label: 'Run Container', cmd: `docker run -d -p ${ports} --name ${img.split(':')[0]} ${img}` }); }
   }
-  
-  // Re-render library too when inputs change
   renderDockerLibrary(dockerSearchInput.value);
-
   dockerOutput.classList.toggle('visible', commands.length > 0);
-  
   dockerCommandList.innerHTML = '';
   commands.forEach(c => {
     const card = document.createElement('div');
@@ -932,9 +909,7 @@ const renderDockerCommands = () => {
         <i data-lucide="copy" style="width: 15px; height: 15px;"></i>
       </button>
     `;
-    card.querySelector('.copy-btn').addEventListener('click', (e) => {
-      copyToClipboard(c.cmd, e.currentTarget);
-    });
+    card.querySelector('.copy-btn').addEventListener('click', (e) => { copyToClipboard(c.cmd, e.currentTarget); });
     dockerCommandList.appendChild(card);
   });
   if (window.lucide) window.lucide.createIcons();
@@ -949,12 +924,7 @@ dockerActionBtns.forEach(btn => {
   btn.addEventListener('click', () => {
     let cmd = btn.dataset.cmd;
     const file = dockerFileInput.value.trim() || 'docker-compose.dev.yml';
-    
-    // Inject file if it's a compose command
-    if (cmd.startsWith('docker-compose')) {
-      cmd = cmd.replace('docker-compose', `docker compose -f ${file}`);
-    }
-
+    if (cmd.startsWith('docker-compose')) { cmd = cmd.replace('docker-compose', `docker compose -f ${file}`); }
     const label = btn.textContent;
     const card = document.createElement('div');
     card.className = 'command-card';
@@ -968,34 +938,23 @@ dockerActionBtns.forEach(btn => {
         <i data-lucide="copy" style="width: 15px; height: 15px;"></i>
       </button>
     `;
-    card.querySelector('.copy-btn').addEventListener('click', (e) => {
-      copyToClipboard(cmd, e.currentTarget);
-    });
+    card.querySelector('.copy-btn').addEventListener('click', (e) => { copyToClipboard(cmd, e.currentTarget); });
     dockerCommandList.prepend(card);
     dockerOutput.classList.add('visible');
     if (window.lucide) window.lucide.createIcons();
   });
 });
 
-// DOCKER LIBRARY DATA - MOVED TO libraries.js
-
 const renderDockerLibrary = (filter = '') => {
   if (!dockerLibraryGrid) return;
   const file = dockerFileInput?.value?.trim() || 'docker-compose.dev.yml';
   const svc = dockerServiceInput?.value?.trim() || 'api';
   const t = translations[currentLang];
-
-  const filtered = DOCKER_LIBRARY.filter(item => 
-    item.desc.en.toLowerCase().includes(filter.toLowerCase()) || 
-    item.desc.es.toLowerCase().includes(filter.toLowerCase()) || 
-    item.tags.toLowerCase().includes(filter.toLowerCase())
-  );
-
+  const filtered = DOCKER_LIBRARY.filter(item => item.desc.en.toLowerCase().includes(filter.toLowerCase()) || item.desc.es.toLowerCase().includes(filter.toLowerCase()) || item.tags.toLowerCase().includes(filter.toLowerCase()));
   dockerLibraryGrid.innerHTML = '';
   filtered.forEach(item => {
     const finalCmd = typeof item.cmd === 'function' ? item.cmd(file, svc) : item.cmd;
     const isFav = favorites.includes(item.desc.en);
-    
     const card = document.createElement('div');
     card.className = 'library-card';
     card.innerHTML = `
@@ -1014,50 +973,181 @@ const renderDockerLibrary = (filter = '') => {
         <span>${finalCmd.length > 35 ? finalCmd.substring(0, 32) + '...' : finalCmd}</span>
       </div>
     `;
-    
     const cmdVal = card.querySelector('.cmd-val');
     cmdVal.onclick = () => copyToClipboard(finalCmd, cmdVal);
-    
     const copyBtn = card.querySelector('.copy-btn-vault');
-    if (copyBtn) copyBtn.onclick = (e) => {
-      e.stopPropagation();
-      copyToClipboard(finalCmd, copyBtn);
-    };
-    
+    if (copyBtn) copyBtn.onclick = (e) => { e.stopPropagation(); copyToClipboard(finalCmd, copyBtn); };
     const starBtn = card.querySelector('.star-btn');
-    starBtn.onclick = (e) => {
-      e.stopPropagation();
-      toggleFavorite(item.desc.en);
-    };
-    
+    starBtn.onclick = (e) => { e.stopPropagation(); toggleFavorite(item.desc.en); };
     dockerLibraryGrid.appendChild(card);
   });
   if (window.lucide) window.lucide.createIcons();
 };
 
-// Initial Library Render
+// --- PERSONAL VAULT & MODAL SYSTEM ---
+
+const modalOverlay = document.getElementById('custom-modal-overlay');
+const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+const modalCancelBtn = document.getElementById('modal-cancel-btn');
+const modalTitle = document.getElementById('txt-modal-title');
+const modalMessage = document.getElementById('txt-modal-message');
+
+let onModalConfirm = null;
+
+const showConfirm = (title, message, callback) => {
+  const t = translations[currentLang];
+  if (modalTitle) modalTitle.textContent = title || t.modalConfirmTitle;
+  if (modalMessage) modalMessage.textContent = message || t.modalConfirmDelete;
+  if (modalConfirmBtn) modalConfirmBtn.textContent = t.btnConfirm;
+  if (modalCancelBtn) modalCancelBtn.textContent = t.btnCancel;
+  onModalConfirm = callback;
+  if (modalOverlay) modalOverlay.classList.add('active');
+};
+
+const hideModal = () => {
+  if (modalOverlay) modalOverlay.classList.remove('active');
+  onModalConfirm = null;
+};
+
+if (modalConfirmBtn) {
+  modalConfirmBtn.onclick = () => {
+    if (onModalConfirm) onModalConfirm();
+    hideModal();
+  };
+}
+if (modalCancelBtn) modalCancelBtn.onclick = hideModal;
+
+const applyPersonalTheme = () => {
+  const color = personalThemeColor;
+  document.documentElement.style.setProperty('--accent-personal', color);
+  if (currentActiveModule === 'personal' || (currentActiveModule === 'favs' && favoriteOrder[0] === 'personal')) {
+    document.body.style.setProperty('--accent-primary', color);
+    document.body.style.setProperty('--glow-shadow', `0 0 20px ${color}33`);
+  }
+};
+
+const resetDynamicThemes = () => {
+  document.body.style.removeProperty('--accent-primary');
+  document.body.style.removeProperty('--glow-shadow');
+};
+
+if (personalThemeColorInput) {
+  personalThemeColorInput.value = personalThemeColor;
+  personalThemeColorInput.addEventListener('input', (e) => {
+    personalThemeColor = e.target.value;
+    localStorage.setItem('personalThemeColor', personalThemeColor);
+    applyPersonalTheme();
+    renderPersonalLibrary();
+    renderFavorites();
+  });
+}
+
+const renderPersonalLibrary = () => {
+  if (!personalLibraryGrid) return;
+  personalLibraryGrid.innerHTML = '';
+  const t = translations[currentLang];
+  const accentColor = personalThemeColor;
+  if (personalCommands.length === 0) {
+    personalLibraryGrid.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1; padding: 40px; border: 1px dashed var(--card-border); border-radius: 12px;"><i data-lucide="lock" style="width: 48px; height: 48px; opacity: 0.2; margin-bottom: 10px;"></i><p style="color: var(--text-secondary); font-size: 0.9rem;">No personal commands yet. Add your first one above!</p></div>`;
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
+  personalCommands.forEach((item, index) => {
+    const card = document.createElement('div');
+    card.className = 'library-card';
+    const iconName = item.icon || 'lock';
+    let finalCmd = (item.cmd || "").replace(/{branch}/g, branchNameInput.value).replace(/{base}/g, baseBranchInput.value);
+    card.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: start;">
+        <div style="display: flex; align-items: center; gap: 10px;"><div style="color: ${accentColor}; display: flex; align-items: center;"><i data-lucide="${iconName}" style="width: 18px; height: 18px;"></i></div><div class="cmd-desc">${item.desc}</div></div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="edit-btn" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 4px; display: flex; align-items: center; transition: all 0.2s;"><i data-lucide="pencil" style="width: 16px; height: 16px;"></i></button>
+          <button class="delete-btn" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 4px; display: flex; align-items: center; transition: all 0.2s;"><i data-lucide="trash-2" style="width: 16px; height: 16px;"></i></button>
+          <button class="copy-btn-vault" title="${t.btnCopy}" style="background: none; border: none; color: ${accentColor}; cursor: pointer; padding: 4px; display: flex; align-items: center; transition: all 0.2s;"><i data-lucide="copy" style="width: 24px; height: 24px;"></i></button>
+        </div>
+      </div>
+      <div class="cmd-val"><span style="color: ${accentColor}">${finalCmd.length > 35 ? finalCmd.substring(0, 32) + '...' : finalCmd}</span></div>
+    `;
+    card.querySelector('.edit-btn').onclick = () => startEditing(index);
+    card.querySelector('.delete-btn').onclick = () => {
+      showConfirm(t.modalConfirmTitle, t.modalConfirmDelete, () => {
+        personalCommands.splice(index, 1);
+        localStorage.setItem('personalCommands', JSON.stringify(personalCommands));
+        renderPersonalLibrary();
+        renderFavorites();
+        showToast('Command deleted', 'check');
+      });
+    };
+    const cmdVal = card.querySelector('.cmd-val');
+    cmdVal.onclick = () => copyToClipboard(finalCmd, cmdVal);
+    const copyBtn = card.querySelector('.copy-btn-vault');
+    if (copyBtn) copyBtn.onclick = (e) => { e.stopPropagation(); copyToClipboard(finalCmd, copyBtn); };
+    personalLibraryGrid.appendChild(card);
+  });
+  if (window.lucide) window.lucide.createIcons();
+};
+
+const startEditing = (index) => {
+  const cmd = personalCommands[index];
+  editingIndex = index;
+  customCmdDescInput.value = cmd.desc;
+  customCmdValInput.value = cmd.cmd;
+  const iconOpts = document.querySelectorAll('.icon-opt');
+  const targetIcon = cmd.icon || 'lock';
+  iconOpts.forEach(opt => { opt.classList.toggle('active', opt.dataset.icon === targetIcon); });
+  document.getElementById('txt-add-command').textContent = translations[currentLang].btnSaveCommand;
+  if (cancelCustomCmdBtn) cancelCustomCmdBtn.style.display = 'block';
+  customCmdDescInput.focus();
+  document.querySelector('.custom-command-form').scrollIntoView({ behavior: 'smooth' });
+};
+
+const resetForm = () => {
+  editingIndex = null;
+  customCmdDescInput.value = '';
+  customCmdValInput.value = '';
+  const iconOpts = document.querySelectorAll('.icon-opt');
+  iconOpts.forEach(opt => opt.classList.toggle('active', opt.dataset.icon === 'lock'));
+  document.getElementById('txt-add-command').textContent = translations[currentLang].btnAddCommand;
+  if (cancelCustomCmdBtn) cancelCustomCmdBtn.style.display = 'none';
+};
+
+if (cancelCustomCmdBtn) cancelCustomCmdBtn.onclick = resetForm;
+
+if (addCustomCmdBtn) {
+  const iconOpts = document.querySelectorAll('.icon-opt');
+  iconOpts.forEach(opt => {
+    opt.addEventListener('click', () => {
+      iconOpts.forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+    });
+  });
+  addCustomCmdBtn.addEventListener('click', () => {
+    const desc = customCmdDescInput.value.trim();
+    const cmd = customCmdValInput.value.trim();
+    const activeIcon = document.querySelector('.icon-opt.active')?.dataset.icon || 'lock';
+    if (desc && cmd) {
+      if (editingIndex !== null) {
+        personalCommands[editingIndex] = { desc, cmd, icon: activeIcon };
+        showToast('Command updated!', 'check');
+      } else {
+        personalCommands.push({ desc, cmd, icon: activeIcon });
+        showToast('Command added to Vault!', 'check');
+      }
+      localStorage.setItem('personalCommands', JSON.stringify(personalCommands));
+      resetForm();
+      renderPersonalLibrary();
+      renderFavorites();
+    }
+  });
+}
+
 renderDockerLibrary();
 renderLibrary('git', GIT_LIBRARY, 'git-library-grid');
 renderLibrary('node', NODE_LIBRARY, 'node-library-grid');
+renderPersonalLibrary();
 renderFavorites();
 renderHistory();
 
-// Search Listeners
-if (dockerSearchInput) {
-  dockerSearchInput.addEventListener('input', (e) => renderDockerLibrary(e.target.value));
-}
-if (gitSearchInput) {
-  gitSearchInput.addEventListener('input', (e) => renderLibrary('git', GIT_LIBRARY, 'git-library-grid', e.target.value));
-}
-if (nodeSearchInput) {
-  nodeSearchInput.addEventListener('input', (e) => renderLibrary('node', NODE_LIBRARY, 'node-library-grid', e.target.value));
-}
-
 updateTranslations();
+applyPersonalTheme();
 if (window.lucide) window.lucide.createIcons();
-
-if (gitParamInput) {
-  gitParamInput.addEventListener('input', () => {
-    renderLibrary('git', GIT_LIBRARY, 'git-library-grid', gitSearchInput.value);
-  });
-}

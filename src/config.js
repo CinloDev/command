@@ -62,7 +62,20 @@ export const translations = {
     lblPriority: 'PRIORITY',
     txtNoFavs: 'No favorites yet. Star some commands to see them here!',
     titleAddFav: 'Favorite',
-    titleRemoveFav: 'Remove from Favorites'
+    titleRemoveFav: 'Remove from Favorites',
+    lblAutoTranslate: 'Auto-translate',
+    navPersonal: 'Personal',
+    lblPersonalVault: 'Private Vault',
+    subtitlePersonal: 'Your personal commands saved locally in this browser.',
+    lblCustomDesc: 'Description',
+    lblCustomVal: 'Command',
+    lblCustomIcon: 'Select Icon',
+    btnAddCommand: 'Add Command',
+    btnSaveCommand: 'Save Changes',
+    btnCancel: 'Cancel',
+    modalConfirmTitle: 'Are you sure?',
+    modalConfirmDelete: 'This command will be permanently removed from your vault.',
+    btnConfirm: 'Confirm'
   },
   es: {
     title: 'Centro de Mandos',
@@ -127,7 +140,20 @@ export const translations = {
     lblPriority: 'PRIORIDAD',
     txtNoFavs: 'Aún no tienes favoritos. ¡Marca algunos comandos para verlos aquí!',
     titleAddFav: 'Marcar como favorito',
-    titleRemoveFav: 'Quitar de favoritos'
+    titleRemoveFav: 'Quitar de favoritos',
+    lblAutoTranslate: 'Traducir auto.',
+    navPersonal: 'Personal',
+    lblPersonalVault: 'Bóveda Privada',
+    subtitlePersonal: 'Tus comandos personales guardados localmente en este navegador.',
+    lblCustomDesc: 'Descripción',
+    lblCustomVal: 'Comando',
+    lblCustomIcon: 'Elegir Ícono',
+    btnAddCommand: 'Añadir Comando',
+    btnSaveCommand: 'Guardar Cambios',
+    btnCancel: 'Cancelar',
+    modalConfirmTitle: '¿Estás seguro?',
+    modalConfirmDelete: 'Este comando se eliminará permanentemente de tu bóveda.',
+    btnConfirm: 'Confirmar'
   }
 };
 
