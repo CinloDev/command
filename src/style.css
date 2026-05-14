@@ -217,12 +217,25 @@ body:not([class*="theme-"]) .task-history {
 .top-nav {
   display: flex;
   gap: 10px;
-  background: var(--card-bg);
+  background: rgba(20, 22, 26, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--card-border);
   padding: 6px;
   border-radius: 12px;
   margin-bottom: 24px;
+  position: sticky;
+  top: 10px;
+  z-index: 1000;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  transition: var(--transition), background 0.3s ease;
 }
+
+.top-nav:hover {
+  background: rgba(25, 28, 33, 0.95);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
 
 .nav-item {
   flex: 1;
@@ -890,19 +903,38 @@ body:not([class*="theme-"]) .task-history {
   font-weight: 500;
 }
 
+/* Specific styling for Personal Vault titles as requested */
+.personal-card .cmd-desc,
+.fav-card-personal .cmd-desc {
+  font-size: 0.85rem;
+  color: var(--accent-primary);
+  opacity: 0.8;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+
+
+
+
 .library-card .cmd-val {
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.85rem;
   color: var(--accent-primary);
   background: rgba(0, 0, 0, 0.2);
-  padding: 6px 10px;
+  padding: 8px 12px;
   border-radius: 6px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: block;
   cursor: pointer;
   transition: var(--transition);
+  overflow-wrap: break-word; /* Modern way to break long words if needed */
+  white-space: normal; /* Allow normal wrapping without preserving indentation spaces */
+  line-height: 1.4;
+  text-align: left;
 }
+
+
 
 .library-card .cmd-val:hover {
   background: rgba(0, 0, 0, 0.4);
@@ -917,8 +949,9 @@ body:not([class*="theme-"]) .task-history {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  z-index: 1000;
+  z-index: 3000;
 }
+
 
 .toast {
   background: rgba(20, 22, 26, 0.9);
@@ -1078,7 +1111,10 @@ body:not([class*="theme-"]) .task-history {
     padding: 4px;
     overflow-x: auto;
     justify-content: flex-start;
+    top: 5px;
+    border-radius: 10px;
   }
+
 
 
   .nav-item span {

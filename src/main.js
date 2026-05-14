@@ -397,7 +397,7 @@ resetBranchBtn.addEventListener('click', () => {
 });
 
 window.addEventListener('keydown', (e) => {
-  if (e.altKey && e.key >= '1' && e.key <= '6') {
+  if (e.altKey && e.key >= '1' && e.key <= '7') {
     e.preventDefault();
     const index = parseInt(e.key) - 1;
     if (typeButtons[index]) typeButtons[index].click();
@@ -474,7 +474,8 @@ const renderCommands = (branch, commitMsg) => {
 
 const detectType = (text) => {
   const low = text.toLowerCase();
-  if (/\b(fix|bug|error|corregir|arreglar|falla|issue)\b/i.test(low)) return 'fix';
+  if (/\b(bug|error|falla|issue)\b/i.test(low)) return 'bug';
+  if (/\b(fix|corregir|arreglar)\b/i.test(low)) return 'fix';
   if (/\b(hotfix|urgente|critical|critico)\b/i.test(low)) return 'hotfix';
   if (/\b(refactor|unificar|unify|reorganize|limpiar|clean)\b/i.test(low)) return 'refactor';
   if (/\b(docs|documentacion|readme|wiki)\b/i.test(low)) return 'docs';
@@ -680,9 +681,7 @@ const renderFavorites = () => {
             </button>
           </div>
         </div>
-        <div class="cmd-val" ${isMultiline ? 'style="white-space: pre-wrap; font-size: 0.8rem; line-height: 1.4; max-height: 150px; overflow-y: auto; text-align: left;"' : ''}>
-          <span>${isMultiline ? finalCmd : (finalCmd.length > 35 ? finalCmd.substring(0, 32) + '...' : finalCmd)}</span>
-        </div>
+        <div class="cmd-val"><span>${finalCmd}</span></div>
       `;
       const cmdVal = card.querySelector('.cmd-val');
       cmdVal.onclick = () => copyToClipboard(finalCmd, cmdVal);
@@ -732,9 +731,7 @@ const renderLibrary = (module, data, containerId, query = '') => {
           </button>
         </div>
       </div>
-      <div class="cmd-val">
-        <span>${finalCmd.length > 35 ? finalCmd.substring(0, 32) + '...' : finalCmd}</span>
-      </div>
+      <div class="cmd-val"><span>${finalCmd}</span></div>
     `;
     const starBtn = card.querySelector('.star-btn');
     starBtn.onclick = (e) => { e.stopPropagation(); toggleFavorite(item.desc.en); };
@@ -970,9 +967,7 @@ const renderDockerLibrary = (filter = '') => {
           </button>
         </div>
       </div>
-      <div class="cmd-val">
-        <span>${finalCmd.length > 35 ? finalCmd.substring(0, 32) + '...' : finalCmd}</span>
-      </div>
+      <div class="cmd-val"><span>${finalCmd}</span></div>
     `;
     const cmdVal = card.querySelector('.cmd-val');
     cmdVal.onclick = () => copyToClipboard(finalCmd, cmdVal);
@@ -1064,7 +1059,7 @@ const renderPersonalLibrary = () => {
   }
   personalCommands.forEach((item, index) => {
     const card = document.createElement('div');
-    card.className = 'library-card';
+    card.className = 'library-card personal-card';
     const iconName = item.icon || 'lock';
     let finalCmd = (item.cmd || "").replace(/{branch}/g, branchNameInput.value).replace(/{base}/g, baseBranchInput.value);
     
@@ -1077,7 +1072,8 @@ const renderPersonalLibrary = () => {
           <div style="color: ${accentColor}; display: flex; align-items: center;">
             <i data-lucide="${iconName}" style="width: 18px; height: 18px;"></i>
           </div>
-          <div class="cmd-desc" style="font-weight: 600;">${item.desc}</div>
+          <div class="cmd-desc">${item.desc}</div>
+
           ${isMultiline ? `<i data-lucide="chevron-down" class="expand-icon" style="width: 14px; height: 14px; opacity: 0.5; color: ${accentColor};"></i>` : ''}
         </div>
         <div style="display: flex; gap: 8px; align-items: center;">
@@ -1088,9 +1084,9 @@ const renderPersonalLibrary = () => {
       </div>
       <div class="personal-card-content ${isMultiline ? 'collapsed' : ''}" style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
         ${lines.map(line => `
-          <div class="sub-cmd-row" data-cmd="${line.replace(/"/g, '&quot;')}" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.15); padding: 6px 10px; border-radius: 6px; border-left: 2px solid ${accentColor};">
-            <span style="font-family: monospace; font-size: 0.8rem; color: ${accentColor}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 85%; text-align: left;">${line}</span>
-            <button class="copy-sub-btn" style="background: none; border: none; color: ${accentColor}; cursor: pointer; padding: 4px; display: flex; align-items: center; opacity: 0.6;"><i data-lucide="clipboard" style="width: 14px; height: 14px;"></i></button>
+          <div class="sub-cmd-row" data-cmd="${line.replace(/"/g, '&quot;')}" style="display: flex; justify-content: space-between; align-items: flex-start; background: rgba(0,0,0,0.15); padding: 8px 12px; border-radius: 6px; border-left: 2px solid ${accentColor}; gap: 10px;">
+            <span style="font-family: monospace; font-size: 0.8rem; color: ${accentColor}; word-break: break-all; white-space: pre-wrap; flex: 1; text-align: left;">${line}</span>
+            <button class="copy-sub-btn" style="background: none; border: none; color: ${accentColor}; cursor: pointer; padding: 4px; display: flex; align-items: center; opacity: 0.6; flex-shrink: 0;"><i data-lucide="clipboard" style="width: 14px; height: 14px;"></i></button>
           </div>
         `).join('')}
       </div>
