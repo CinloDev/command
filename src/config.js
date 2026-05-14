@@ -65,7 +65,11 @@ export const translations = {
     titleAddFav: 'Favorite',
     titleRemoveFav: 'Remove from Favorites',
     lblAutoTranslate: 'Auto-translate',
-    navPersonal: 'Personal',
+    navGit: 'Git',
+    navNode: 'Node',
+    navDocker: 'Docker',
+    navFavs: 'Favs',
+    navPersonal: 'Private',
     lblPersonalVault: 'Private Vault',
     subtitlePersonal: 'Your personal commands saved locally in this browser.',
     lblCustomDesc: 'Description',
@@ -76,7 +80,11 @@ export const translations = {
     btnCancel: 'Cancel',
     modalConfirmTitle: 'Are you sure?',
     modalConfirmDelete: 'This command will be permanently removed from your vault.',
-    btnConfirm: 'Confirm'
+    btnConfirm: 'Confirm',
+    placeholderTask: 'e.g. Add user authentication flow',
+    placeholderSearch: 'Search commands...',
+    placeholderDocker: 'Search command (e.g. logs, prune, network)...',
+    placeholderGitParam: 'External Branch / Hash / Value...'
   },
   es: {
     title: 'Centro de Mandos',
@@ -144,7 +152,11 @@ export const translations = {
     titleAddFav: 'Marcar como favorito',
     titleRemoveFav: 'Quitar de favoritos',
     lblAutoTranslate: 'Traducir auto.',
-    navPersonal: 'Personal',
+    navGit: 'Git',
+    navNode: 'Node',
+    navDocker: 'Docker',
+    navFavs: 'Favoritos',
+    navPersonal: 'Privado',
     lblPersonalVault: 'Bóveda Privada',
     subtitlePersonal: 'Tus comandos personales guardados localmente en este navegador.',
     lblCustomDesc: 'Descripción',
@@ -155,7 +167,11 @@ export const translations = {
     btnCancel: 'Cancelar',
     modalConfirmTitle: '¿Estás seguro?',
     modalConfirmDelete: 'Este comando se eliminará permanentemente de tu bóveda.',
-    btnConfirm: 'Confirmar'
+    btnConfirm: 'Confirmar',
+    placeholderTask: 'ej. Añadir flujo de autenticación de usuario',
+    placeholderSearch: 'Buscar comandos...',
+    placeholderDocker: 'Buscar comando (ej. logs, prune, network)...',
+    placeholderGitParam: 'Rama externa / Hash / Valor...'
   }
 };
 
