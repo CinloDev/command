@@ -43,19 +43,19 @@
       <nav class="top-nav">
         <button class="nav-item active" data-module="git">
           <img src="https://cdn.simpleicons.org/git/white" alt="Git">
-          <span>Git</span>
+          <span id="txt-nav-git">Git</span>
         </button>
         <button class="nav-item" data-module="node">
           <img src="https://cdn.simpleicons.org/nodedotjs/white" alt="Node.js">
-          <span>Node</span>
+          <span id="txt-nav-node">Node</span>
         </button>
         <button class="nav-item" data-module="docker">
           <img src="https://cdn.simpleicons.org/docker/white" alt="Docker">
-          <span>Docker</span>
+          <span id="txt-nav-docker">Docker</span>
         </button>
         <button class="nav-item" data-module="favs">
           <i data-lucide="star" style="width: 20px; height: 20px;"></i>
-          <span>Favs</span>
+          <span id="txt-nav-favs">Favs</span>
         </button>
         <button class="nav-item" data-module="personal">
           <i data-lucide="lock" style="width: 20px; height: 20px;"></i>
@@ -69,7 +69,7 @@
           <div class="library-header" style="flex-direction: column; align-items: start; gap: 12px;">
             <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
               <h2 id="lbl-favs-vault" class="input-label" style="margin: 0;">My Favorites</h2>
-              <div id="fav-order-controls" style="display: flex; gap: 8px;">
+              <div id="fav-order-controls" style="display: flex; gap: 8px; align-items: center;">
                 <!-- Order buttons will be injected here -->
               </div>
             </div>
@@ -202,7 +202,7 @@
             <div style="display: flex; gap: 8px;">
               <button id="toggle-terminal-mode" class="terminal-toggle" title="Terminal View">
                 <i data-lucide="terminal"></i>
-                <span>Terminal View</span>
+                <span id="txt-terminal-view">Terminal View</span>
               </button>
               <button class="copy-btn icon-only" id="copy-all" style="background: rgba(255, 255, 255, 0.05); height: 34px; width: 34px;" title="Copy Sequence">
                 <i data-lucide="copy" style="width: 16px; height: 16px;"></i>
@@ -213,20 +213,6 @@
             <!-- Commands will be injected here -->
           </div>
 
-          <label class="input-label" style="margin-top: 30px;" id="lbl-full-preview">Full Workflow Preview</label>
-          <div class="terminal-preview" id="terminal-preview">
-            <div class="terminal-header">
-              <div class="dots"><span></span><span></span><span></span></div>
-              <div class="terminal-title">bash — workflow.sh</div>
-            </div>
-            <div class="terminal-body">
-              <span class="prompt">$</span>
-              <code id="full-command-text"></code>
-            </div>
-            <button class="copy-btn icon-only" id="copy-terminal" title="Copy Full Sequence">
-              <i data-lucide="copy" style="width: 16px; height: 16px;"></i>
-            </button>
-          </div>
 
         </div><!-- End output-section -->
 

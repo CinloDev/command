@@ -25,12 +25,12 @@ export const GIT_LIBRARY = [
 ];
 
 export const NODE_LIBRARY = [
-  { desc: { en: 'Clean node_modules', es: 'Borrar node_modules' }, cmd: () => `rm -rf node_modules package-lock.json`, tags: 'clean reset' },
-  { desc: { en: 'Fresh Install', es: 'Instalación limpia' }, cmd: () => `npm install`, tags: 'install npm' },
-  { desc: { en: 'NPM Audit Fix', es: 'Arreglar vulnerabilidades' }, cmd: () => `npm audit fix`, tags: 'audit fix' },
-  { desc: { en: 'Check versions', es: 'Verificar versiones instaladas' }, cmd: () => `npm list --depth=0`, tags: 'list versions' },
-  { desc: { en: 'Outdated packages', es: 'Paquetes desactualizados' }, cmd: () => `npm outdated`, tags: 'outdated' },
-  { desc: { en: 'Initialize TypeScript', es: 'Inicializar TypeScript' }, cmd: () => `npx tsc --init`, tags: 'typescript init' }
+  { desc: { en: 'Clean node_modules', es: 'Borrar node_modules' }, cmd: (mgr) => `rm -rf node_modules ${mgr === 'npm' ? 'package-lock.json' : (mgr === 'yarn' ? 'yarn.lock' : 'pnpm-lock.yaml')}`, tags: 'clean reset' },
+  { desc: { en: 'Fresh Install', es: 'Instalación limpia' }, cmd: (mgr) => `${mgr} install`, tags: 'install node' },
+  { desc: { en: 'Audit Fix', es: 'Arreglar vulnerabilidades' }, cmd: (mgr) => mgr === 'npm' ? 'npm audit fix' : (mgr === 'pnpm' ? 'pnpm audit --fix' : 'npm audit fix'), tags: 'audit fix' },
+  { desc: { en: 'Check versions', es: 'Verificar versiones instaladas' }, cmd: (mgr) => `${mgr} list --depth=0`, tags: 'list versions' },
+  { desc: { en: 'Outdated packages', es: 'Paquetes desactualizados' }, cmd: (mgr) => `${mgr} outdated`, tags: 'outdated' },
+  { desc: { en: 'Initialize TypeScript', es: 'Inicializar TypeScript' }, cmd: (mgr) => `${mgr === 'pnpm' ? 'pnpm dlx' : (mgr === 'yarn' ? 'yarn dlx' : 'npx')} tsc --init`, tags: 'typescript init' }
 ];
 
 export const DOCKER_LIBRARY = [
