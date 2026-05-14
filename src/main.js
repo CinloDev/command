@@ -802,7 +802,7 @@ const nodeCommandList = document.getElementById('node-command-list');
 const nodeOutput = document.getElementById('node-output');
 
 let currentNodeType = 'std';
-let currentMgr = 'npm';
+let currentMgr = 'pnpm';
 
 const renderNodeCommands = () => {
   const pkgs = nodePkgInput.value.trim();
