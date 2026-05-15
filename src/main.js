@@ -50,9 +50,12 @@ const dockerOutput = document.getElementById('docker-output');
 
 // Personal Vault Inputs
 const addCustomCmdBtn = document.getElementById('add-custom-cmd-btn');
+const cancelCustomCmdBtn = document.getElementById('cancel-custom-cmd-btn');
+const exportVaultBtn = document.getElementById('export-vault-btn');
+const importVaultBtn = document.getElementById('import-vault-btn');
+const importVaultInput = document.getElementById('import-vault-input');
 const customCmdDescInput = document.getElementById('custom-cmd-desc');
 const customCmdValInput = document.getElementById('custom-cmd-val');
-const cancelCustomCmdBtn = document.getElementById('cancel-custom-cmd-btn');
 const txtCancelEdit = document.getElementById('txt-cancel-edit');
 const personalThemeColorInput = document.getElementById('personal-theme-color');
 
@@ -554,6 +557,66 @@ if (personalThemeColorInput) {
     state.set('personalThemeColor', e.target.value);
     applyPersonalTheme();
     refreshActiveModuleVault(); // Refresh icons color
+  });
+}
+
+// Export Vault Logic
+if (exportVaultBtn) {
+  exportVaultBtn.addEventListener('click', () => {
+    const data = JSON.stringify(state.personalCommands, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `command-center-vault-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    utils.showToast(translations[state.currentLang].txtExportVault || 'Exported!', 'check');
+  });
+}
+
+// Import Vault Logic
+if (importVaultBtn) {
+  importVaultBtn.addEventListener('click', () => importVaultInput.click());
+}
+
+if (importVaultInput) {
+  importVaultInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const importedData = JSON.parse(event.target.result);
+        
+        // Basic validation
+        if (!Array.isArray(importedData)) throw new Error('Invalid format');
+        
+        const validated = importedData.filter(item => item.desc && item.cmd);
+        if (validated.length === 0) throw new Error('No valid commands found');
+
+        // Merge logic: avoid duplicates by command string
+        const current = state.personalCommands;
+        const existingCmds = new Set(current.map(c => c.cmd));
+        const newCmds = validated.filter(c => !existingCmds.has(c.cmd));
+        
+        if (newCmds.length === 0) {
+          utils.showToast('No new commands to import', 'alert-circle');
+          return;
+        }
+
+        state.set('personalCommands', [...current, ...newCmds]);
+        utils.showToast(`Imported ${newCmds.length} new commands!`, 'check');
+        updateUI();
+      } catch (err) {
+        utils.showToast('Error importing vault: ' + err.message, 'alert-circle');
+      }
+      importVaultInput.value = ''; // Reset
+    };
+    reader.readAsText(file);
   });
 }
 
