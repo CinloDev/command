@@ -590,6 +590,31 @@ body:not([class*="theme-"]) .task-history {
   border-color: var(--accent-primary);
 }
 
+.icon-btn-secondary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border);
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.icon-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+}
+
+.icon-btn-secondary i {
+  width: 14px;
+  height: 14px;
+}
+
 .input-warning {
   color: #ff9800;
   font-size: 0.75rem;

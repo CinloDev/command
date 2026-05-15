@@ -87,9 +87,22 @@
               <h2 id="lbl-personal-vault" class="input-label" style="margin: 0;">Private Vault</h2>
               <p id="txt-personal-subtitle" style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">Your personal commands saved locally in this browser.</p>
             </div>
-            <div class="theme-picker-container" style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 12px; border: 1px solid var(--card-border); align-self: flex-start;">
-              <label for="personal-theme-color" style="font-size: 0.7rem; color: var(--text-secondary); cursor: pointer; margin: 0;">Theme</label>
-              <input type="color" id="personal-theme-color" value="#a855f7" style="width: 24px; height: 24px; border: none; background: none; cursor: pointer; padding: 0; border-radius: 4px; overflow: hidden; display: block;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div class="vault-actions" style="display: flex; gap: 8px; margin-right: 8px; border-right: 1px solid var(--card-border); padding-right: 12px;">
+                <button id="export-vault-btn" class="icon-btn-secondary" title="Export JSON">
+                  <i data-lucide="download"></i>
+                  <span id="txt-export-vault">Export</span>
+                </button>
+                <button id="import-vault-btn" class="icon-btn-secondary" title="Import JSON">
+                  <i data-lucide="upload"></i>
+                  <span id="txt-import-vault">Import</span>
+                </button>
+                <input type="file" id="import-vault-input" accept=".json" style="display: none;">
+              </div>
+              <div class="theme-picker-container" style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 12px; border: 1px solid var(--card-border); align-self: flex-start;">
+                <label for="personal-theme-color" style="font-size: 0.7rem; color: var(--text-secondary); cursor: pointer; margin: 0;">Theme</label>
+                <input type="color" id="personal-theme-color" value="#a855f7" style="width: 24px; height: 24px; border: none; background: none; cursor: pointer; padding: 0; border-radius: 4px; overflow: hidden; display: block;">
+              </div>
             </div>
           </div>
           
@@ -143,10 +156,6 @@
               <div class="input-group">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                   <label class="input-label" id="lbl-task-title" for="task-title" style="margin-bottom: 0;">Task Title / Branch</label>
-                  <label class="auto-translate-control">
-                    <input type="checkbox" id="auto-translate-check">
-                    <span id="txt-auto-translate">Auto-translate</span>
-                  </label>
                 </div>
                 <div class="input-with-actions">
                   <input type="text" id="task-title" placeholder="e.g. Add user authentication flow" autocomplete="off">

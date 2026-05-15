@@ -84,7 +84,9 @@ export const translations = {
     placeholderTask: 'e.g. Add user authentication flow',
     placeholderSearch: 'Search commands...',
     placeholderDocker: 'Search command (e.g. logs, prune, network)...',
-    placeholderGitParam: 'External Branch / Hash / Value...'
+    placeholderGitParam: 'External Branch / Hash / Value...',
+    txtExportVault: 'Export',
+    txtImportVault: 'Import'
   },
   es: {
     title: 'Centro de Mandos',
@@ -171,7 +173,9 @@ export const translations = {
     placeholderTask: 'ej. Añadir flujo de autenticación de usuario',
     placeholderSearch: 'Buscar comandos...',
     placeholderDocker: 'Buscar comando (ej. logs, prune, network)...',
-    placeholderGitParam: 'Rama externa / Hash / Valor...'
+    placeholderGitParam: 'Rama externa / Hash / Valor...',
+    txtExportVault: 'Exportar',
+    txtImportVault: 'Importar'
   }
 };
 
