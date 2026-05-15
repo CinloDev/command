@@ -2,11 +2,15 @@ import './style.css'
 import { GIT_LIBRARY, NODE_LIBRARY, DOCKER_LIBRARY } from './libraries.js'
 import { translations } from './config.js'
 import { storage } from './modules/storage.js'
+import { state } from './modules/state.js'
+import { translator } from './modules/translator.js'
+import { nodeEngine } from './modules/node-engine.js'
+import { dockerEngine } from './modules/docker-engine.js'
 import * as gitEngine from './modules/git-engine.js'
 import * as utils from './modules/utils.js'
 import * as uiRender from './modules/ui-render.js'
 
-let currentLang = storage.getLang();
+// State is managed in modules/state.js
 
 // DOM Elements
 const taskTitleInput = document.getElementById('task-title');
@@ -52,38 +56,24 @@ const cancelCustomCmdBtn = document.getElementById('cancel-custom-cmd-btn');
 const txtCancelEdit = document.getElementById('txt-cancel-edit');
 const personalThemeColorInput = document.getElementById('personal-theme-color');
 
-// State
-let taskHistory = storage.getHistory();
-let favorites = storage.getFavorites();
-let personalCommands = storage.getPersonalCommands();
-let favoriteOrder = storage.getFavoriteOrder();
-let personalThemeColor = storage.getPersonalThemeColor();
-let editingIndex = null;
-
-let currentType = 'feature';
-let currentWorkflow = 'new';
-let isManualBranch = false;
-let isManualCommit = false;
-let isManualType = false;
-let currentActiveModule = 'git';
-let autoTranslateEnabled = storage.getAutoTranslate();
+// (State is now central in state module)
 
 // --- INITIALIZATION ---
-if (autoTranslateCheck) autoTranslateCheck.checked = autoTranslateEnabled;
+if (autoTranslateCheck) autoTranslateCheck.checked = state.autoTranslateEnabled;
 
 const updateTranslations = () => {
-  const t = translations[currentLang];
+  const t = translations[state.currentLang];
   
   // Header & Navigation
   document.getElementById('txt-title').textContent = t.title;
-  const subtitleKey = 'subtitle' + currentActiveModule.charAt(0).toUpperCase() + currentActiveModule.slice(1);
+  const subtitleKey = 'subtitle' + state.currentActiveModule.charAt(0).toUpperCase() + state.currentActiveModule.slice(1);
   document.getElementById('txt-subtitle').textContent = t[subtitleKey] || t.subtitleGit;
   document.getElementById('txt-nav-git').textContent = t.navGit;
   document.getElementById('txt-nav-node').textContent = t.navNode;
   document.getElementById('txt-nav-docker').textContent = t.navDocker;
   document.getElementById('txt-nav-favs').textContent = t.navFavs;
   document.getElementById('txt-nav-personal').textContent = t.navPersonal;
-  langBtn.textContent = currentLang.toUpperCase();
+  langBtn.textContent = state.currentLang.toUpperCase();
 
   // Labels Mapping
   const lbls = {
@@ -115,7 +105,7 @@ const updateTranslations = () => {
     'lbl-custom-desc': t.lblCustomDesc,
     'lbl-custom-val': t.lblCustomVal,
     'lbl-custom-icon': t.lblCustomIcon,
-    'txt-add-command': editingIndex !== null ? t.btnSaveCommand : t.btnAddCommand,
+    'txt-add-command': state.editingIndex !== null ? t.btnSaveCommand : t.btnAddCommand,
     'txt-cancel-edit': t.btnCancel,
     'txt-terminal-view': document.body.classList.contains('terminal-mode') ? t.listView : t.terminalView,
     'txt-modal-title': t.modalConfirmTitle,
@@ -166,8 +156,7 @@ const updateTranslations = () => {
 };
 
 langBtn.addEventListener('click', () => {
-  currentLang = currentLang === 'en' ? 'es' : 'en';
-  storage.setLang(currentLang);
+  state.set('currentLang', state.currentLang === 'en' ? 'es' : 'en');
   updateTranslations();
 });
 
@@ -179,38 +168,40 @@ const updateUI = () => {
     outputSection.classList.add('visible');
     
     // Auto-detect type
-    if (!isManualType && !isManualBranch && title.length > 3) {
+    if (!state.isManualType && !state.isManualBranch && title.length > 3) {
       const detected = gitEngine.detectType(title);
-      if (detected !== currentType) {
-        currentType = detected;
-        typeButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.type === currentType));
+      if (detected !== state.currentType) {
+        state.set('currentType', detected);
+        typeButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.type === state.currentType));
       }
     }
 
-    if (translateBtn) translateBtn.classList.toggle('active-mode', autoTranslateEnabled);
+    if (translateBtn) translateBtn.classList.toggle('active-mode', state.autoTranslateEnabled);
 
     // Branch Name Generation
-    if (!isManualBranch) {
-      const generatedBranch = (title.includes('/') || currentWorkflow === 'recreate') 
+    if (!state.isManualBranch) {
+      const generatedBranch = (title.includes('/') || state.currentWorkflow === 'recreate') 
         ? gitEngine.sanitizeBranchName(title) 
-        : `${currentType}/${gitEngine.slugify(title)}`;
+        : `${state.currentType}/${gitEngine.slugify(title)}`;
       branchNameInput.value = generatedBranch;
     }
 
     // Commit Message Generation
-    if (!isManualCommit) {
+    if (!state.isManualCommit) {
       const cleanTitle = title.replace(/\[.*?\]/g, '').replace(/\b(frontend|backend|fe|be|front|back)\b/gi, '').trim();
       const issueMatch = title.match(/#(\d+)/);
       const commitPrefix = issueMatch ? `#${issueMatch[1]} - ` : '';
-      commitMsgInput.value = `${currentType}: ${commitPrefix}${cleanTitle}`;
+      commitMsgInput.value = `${state.currentType}: ${commitPrefix}${cleanTitle}`;
       utils.autoResizeTextarea(commitMsgInput);
     }
 
     validateBranch(branchNameInput.value);
-    uiRender.renderCommands(branchNameInput.value, commitMsgInput.value, currentWorkflow, baseBranchInput.value, currentType, translations, currentLang);
+    uiRender.renderCommands(branchNameInput.value, commitMsgInput.value, state.currentWorkflow, baseBranchInput.value, state.currentType, translations, state.currentLang);
   } else {
     outputSection.classList.remove('visible');
-    isManualBranch = isManualCommit = isManualType = false;
+    state.set('isManualBranch', false);
+    state.set('isManualCommit', false);
+    state.set('isManualType', false);
   }
 
   // Always refresh active vault and favorites regardless of title
@@ -219,17 +210,17 @@ const updateUI = () => {
 };
 
 const refreshActiveModuleVault = () => {
-    if (currentActiveModule === 'git') renderGitLibrary();
-    if (currentActiveModule === 'node') {
+    if (state.currentActiveModule === 'git') renderGitLibrary();
+    if (state.currentActiveModule === 'node') {
         renderNodeCommands();
         renderNodeLibrary();
     }
-    if (currentActiveModule === 'docker') renderDockerCommands();
-    if (currentActiveModule === 'personal') uiRender.renderPersonalLibrary(personalCommands, personalThemeColor, translations, currentLang, branchNameInput.value, baseBranchInput.value, startEditing, deletePersonalCommand, (cmd, btn) => utils.copyToClipboard(cmd, btn, translations[currentLang].copied));
+    if (state.currentActiveModule === 'docker') renderDockerCommands();
+    if (state.currentActiveModule === 'personal') uiRender.renderPersonalLibrary(state.personalCommands, state.personalThemeColor, translations, state.currentLang, branchNameInput.value, baseBranchInput.value, startEditing, deletePersonalCommand, (cmd, btn) => utils.copyToClipboard(cmd, btn, translations[state.currentLang].copied));
 };
 
 const validateBranch = (name) => {
-  const t = translations[currentLang];
+  const t = translations[state.currentLang];
   let warning = '';
   if (name.length > 50) warning = t.warningLong;
   else if (/[^\w\d\/\-._]/.test(name)) warning = t.warningChars;
@@ -252,32 +243,34 @@ taskTitleInput.addEventListener('keydown', async (e) => {
     e.preventDefault();
     const text = taskTitleInput.value.trim();
     if (text) {
-      isManualBranch = isManualType = isManualCommit = false;
+      state.set('isManualBranch', false);
+      state.set('isManualType', false);
+      state.set('isManualCommit', false);
       updateUI();
-      if (autoTranslateEnabled && gitEngine.isSpanishText(text)) await translateTitle();
+      if (state.autoTranslateEnabled && translator.isSpanish(text)) await translateTitle();
       copyBranchBtn.click();
     }
   }
 });
 
 branchNameInput.addEventListener('input', () => {
-  isManualBranch = true;
+  state.set('isManualBranch', true);
   branchNameInput.value = gitEngine.sanitizeBranchName(branchNameInput.value);
   updateUI();
 });
 
 commitMsgInput.addEventListener('input', () => {
-  isManualCommit = true;
+  state.set('isManualCommit', true);
   utils.autoResizeTextarea(commitMsgInput);
-  uiRender.renderCommands(branchNameInput.value, commitMsgInput.value, currentWorkflow, baseBranchInput.value, currentType, translations, currentLang);
+  uiRender.renderCommands(branchNameInput.value, commitMsgInput.value, state.currentWorkflow, baseBranchInput.value, state.currentType, translations, state.currentLang);
 });
 
 typeButtons.forEach(btn => {
   btn.addEventListener('click', () => {
-    isManualType = true;
+    state.set('isManualType', true);
     typeButtons.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    currentType = btn.dataset.type;
+    state.set('currentType', btn.dataset.type);
     updateUI();
   });
 });
@@ -286,8 +279,8 @@ workflowButtons.forEach(btn => {
   btn.addEventListener('click', () => {
     workflowButtons.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    currentWorkflow = btn.dataset.wf;
-    const isRecreate = currentWorkflow === 'recreate';
+    state.set('currentWorkflow', btn.dataset.wf);
+    const isRecreate = state.currentWorkflow === 'recreate';
     baseBranchGroup.style.display = 'flex';
     document.querySelector('.task-types').style.display = isRecreate ? 'none' : 'flex';
     document.getElementById('lbl-task-type').style.display = isRecreate ? 'none' : 'block';
@@ -303,12 +296,11 @@ const translateTitle = async () => {
   if (!text) return;
   translateBtn.classList.add('loading');
   try {
-    const isSpanish = gitEngine.isSpanishText(text);
+    const isSpanish = translator.isSpanish(text);
     const langPair = isSpanish ? 'es|en' : 'en|es';
-    const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${langPair}`);
-    const data = await response.json();
-    if (data.responseData?.translatedText) {
-      taskTitleInput.value = data.responseData.translatedText;
+    const translatedText = await translator.translate(text, isSpanish ? 'es' : 'en', isSpanish ? 'en' : 'es');
+    if (translatedText) {
+      taskTitleInput.value = translatedText;
       updateUI();
     }
   } finally {
@@ -320,8 +312,7 @@ translateBtn.addEventListener('click', translateTitle);
 
 if (autoTranslateCheck) {
   autoTranslateCheck.addEventListener('change', (e) => {
-    autoTranslateEnabled = e.target.checked;
-    storage.saveAutoTranslate(autoTranslateEnabled);
+    state.set('autoTranslateEnabled', e.target.checked);
   });
 }
 
@@ -334,18 +325,19 @@ if (clearTaskBtn) {
 }
 
 resetBranchBtn.addEventListener('click', () => {
-  isManualBranch = isManualType = false;
+  state.set('isManualBranch', false);
+  state.set('isManualType', false);
   updateUI();
 });
 
 copyBranchBtn.addEventListener('click', () => {
-  utils.copyToClipboard(branchNameInput.value, copyBranchBtn, translations[currentLang].copied);
-  saveToHistory(taskTitleInput.value.trim(), currentType);
+  utils.copyToClipboard(branchNameInput.value, copyBranchBtn, translations[state.currentLang].copied);
+  saveToHistory(taskTitleInput.value.trim(), state.currentType);
 });
 
 copyAllBtn.addEventListener('click', () => {
   const allCmds = Array.from(document.querySelectorAll('.command-text')).map(el => el.textContent).join(' && ');
-  utils.copyToClipboard(allCmds, copyAllBtn, translations[currentLang].copied);
+  utils.copyToClipboard(allCmds, copyAllBtn, translations[state.currentLang].copied);
 });
 
 // Navigation
@@ -356,7 +348,7 @@ navItems.forEach(item => {
   item.addEventListener('click', () => {
     const module = item.dataset.module;
     if (item.classList.contains('active')) return;
-    currentActiveModule = module;
+    state.set('currentActiveModule', module);
     navItems.forEach(n => n.classList.remove('active'));
     item.classList.add('active');
     moduleContents.forEach(m => { m.classList.remove('active'); m.style.display = 'none'; });
@@ -378,7 +370,7 @@ const renderGitLibrary = () => {
     ...item,
     params: [gitParamInput.value, baseBranchInput.value, branchNameInput.value]
   }));
-  uiRender.renderLibrary('git', dataWithParams, 'git-library-grid', gitSearchInput.value, favorites, translations, currentLang, toggleFavorite);
+  uiRender.renderLibrary('git', dataWithParams, 'git-library-grid', gitSearchInput.value, state.favorites, translations, state.currentLang, toggleFavorite);
 };
 
 gitSearchInput.addEventListener('input', renderGitLibrary);
@@ -391,45 +383,78 @@ const nodeActionBtns = document.querySelectorAll('.node-action-btn');
 const nodeCommandList = document.getElementById('node-command-list');
 const nodeOutput = document.getElementById('node-output');
 
-let currentNodeType = 'std', currentMgr = 'pnpm';
+// (Node state is now in state.js)
 
 const renderNodeCommands = () => {
   const pkgs = nodePkgInput.value.trim();
-  let commands = [];
-  if (pkgs) {
-    let baseCmd = currentMgr === 'npm' ? 'npm install' : (currentMgr === 'yarn' ? 'yarn add' : 'pnpm add');
-    if (currentNodeType === 'dev') baseCmd += ' -D';
-    if (currentNodeType === 'glob') baseCmd += (currentMgr === 'npm' ? ' -g' : ' --global');
-    commands.push({ label: 'Install', cmd: `${baseCmd} ${pkgs}` });
-  }
+  const commands = nodeEngine.generateInstallCommands(pkgs, state.nodeMgr, state.nodeType);
+  
   nodeOutput.classList.toggle('visible', commands.length > 0);
   nodeCommandList.innerHTML = '';
   commands.forEach(c => {
     const card = document.createElement('div');
     card.className = 'command-card';
     card.innerHTML = `<div class="command-info"><div class="command-text">${c.cmd}</div></div><button class="copy-btn"><i data-lucide="copy"></i></button>`;
-    card.querySelector('.copy-btn').onclick = () => utils.copyToClipboard(c.cmd, card.querySelector('.copy-btn'), translations[currentLang].copied);
+    card.querySelector('.copy-btn').onclick = () => utils.copyToClipboard(c.cmd, card.querySelector('.copy-btn'), translations[state.currentLang].copied);
     nodeCommandList.appendChild(card);
   });
   if (window.lucide) window.lucide.createIcons();
 };
 
 nodePkgInput.addEventListener('input', renderNodeCommands);
-nodeTypeBtns.forEach(btn => btn.onclick = () => { nodeTypeBtns.forEach(b => b.classList.remove('active')); btn.classList.add('active'); currentNodeType = btn.dataset.type; renderNodeCommands(); });
+nodeTypeBtns.forEach(btn => btn.onclick = () => { 
+    nodeTypeBtns.forEach(b => b.classList.remove('active')); 
+    btn.classList.add('active'); 
+    state.set('nodeType', btn.dataset.type); 
+    renderNodeCommands(); 
+});
 nodeMgrBtns.forEach(btn => btn.onclick = () => { 
     nodeMgrBtns.forEach(b => b.classList.remove('active')); 
     btn.classList.add('active'); 
-    currentMgr = btn.dataset.mgr; 
+    state.set('nodeMgr', btn.dataset.mgr); 
     renderNodeCommands(); 
     renderNodeLibrary(); // Refresh vault commands too
+});
+
+nodeActionBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    let cmd = btn.dataset.cmd;
+    const mgr = state.nodeMgr;
+    
+    // Adapt command to selected manager
+    if (mgr !== 'npm') {
+      cmd = cmd.replace(/^npm install/, mgr === 'yarn' ? 'yarn install' : 'pnpm install')
+               .replace(/^npm /, mgr + ' ');
+    }
+    
+    // Visual feedback: Flash effect
+    btn.classList.add('btn-flash');
+    setTimeout(() => btn.classList.remove('btn-flash'), 200);
+
+    const label = btn.textContent;
+    const commands = [{ label, cmd }];
+    
+    nodeOutput.classList.add('visible');
+    nodeCommandList.innerHTML = '';
+    commands.forEach(c => {
+      const card = document.createElement('div');
+      card.className = 'command-card';
+      card.innerHTML = `<div class="command-info"><div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 4px;">Quick Action</div><div class="command-text">${c.cmd}</div></div><button class="copy-btn"><i data-lucide="copy"></i></button>`;
+      card.querySelector('.copy-btn').onclick = () => utils.copyToClipboard(c.cmd, card.querySelector('.copy-btn'), translations[state.currentLang]?.copied || 'Copied!');
+      nodeCommandList.appendChild(card);
+    });
+    if (window.lucide) window.lucide.createIcons();
+    
+    nodeOutput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
 });
 
 const renderNodeLibrary = () => {
   const dataWithParams = NODE_LIBRARY.map(item => ({
     ...item,
-    params: [currentMgr]
+    params: [state.nodeMgr]
   }));
-  uiRender.renderLibrary('node', dataWithParams, 'node-library-grid', nodeSearchInput.value, favorites, translations, currentLang, toggleFavorite);
+  uiRender.renderLibrary('node', dataWithParams, 'node-library-grid', nodeSearchInput.value, state.favorites, translations, state.currentLang, toggleFavorite);
 };
 
 nodeSearchInput.addEventListener('input', renderNodeLibrary);
@@ -439,7 +464,8 @@ const renderDockerCommands = () => {
   const img = dockerImgInput.value.trim();
   const file = dockerFileInput.value.trim() || 'docker-compose.yml';
   const svc = dockerServiceInput.value.trim() || 'app';
-  // ... similar logic ...
+  
+  dockerEngine.generateCommands(img, file, svc); // For side-effects if any
   renderDockerLibrary(dockerSearchInput.value);
 };
 
@@ -450,17 +476,41 @@ const renderDockerLibrary = (filter = '') => {
     ...item,
     params: [file, svc]
   }));
-  uiRender.renderLibrary('docker', dataWithParams, 'docker-library-grid', filter, favorites, translations, currentLang, toggleFavorite);
+  uiRender.renderLibrary('docker', dataWithParams, 'docker-library-grid', filter, state.favorites, translations, state.currentLang, toggleFavorite);
 };
 
+dockerActionBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const cmd = btn.dataset.cmd;
+    // Visual feedback: Flash effect
+    btn.classList.add('btn-flash');
+    setTimeout(() => btn.classList.remove('btn-flash'), 200);
+
+    const label = btn.textContent;
+    const commands = [{ label, cmd }];
+    
+    dockerOutput.classList.add('visible');
+    dockerCommandList.innerHTML = '';
+    commands.forEach(c => {
+      const card = document.createElement('div');
+      card.className = 'command-card';
+      card.innerHTML = `<div class="command-info"><div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 4px;">Quick Action</div><div class="command-text">${c.cmd}</div></div><button class="copy-btn"><i data-lucide="copy"></i></button>`;
+      card.querySelector('.copy-btn').onclick = () => utils.copyToClipboard(c.cmd, card.querySelector('.copy-btn'), translations[state.currentLang]?.copied || 'Copied!');
+      dockerCommandList.appendChild(card);
+    });
+    if (window.lucide) window.lucide.createIcons();
+    
+    dockerOutput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+});
+
 // Personal Vault Logic
-let currentCustomIcon = 'lock';
 const iconOpts = document.querySelectorAll('.icon-opt');
 iconOpts.forEach(btn => {
   btn.addEventListener('click', () => {
     iconOpts.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    currentCustomIcon = btn.dataset.icon;
+    state.set('customIcon', btn.dataset.icon);
   });
 });
 
@@ -468,20 +518,21 @@ if (addCustomCmdBtn) {
   addCustomCmdBtn.addEventListener('click', () => {
     const desc = customCmdDescInput.value.trim();
     const cmd = customCmdValInput.value.trim();
-    const t = translations[currentLang];
+    const t = translations[state.currentLang];
 
     if (!desc || !cmd) return;
 
-    if (editingIndex !== null) {
-      personalCommands[editingIndex] = { desc, cmd, icon: currentCustomIcon };
-      editingIndex = null;
+    if (state.editingIndex !== null) {
+      const updatedCommands = [...state.personalCommands];
+      updatedCommands[state.editingIndex] = { desc, cmd, icon: state.customIcon };
+      state.set('personalCommands', updatedCommands);
+      state.set('editingIndex', null);
       addCustomCmdBtn.querySelector('span').textContent = t.btnAddCommand;
       cancelCustomCmdBtn.style.display = 'none';
     } else {
-      personalCommands.push({ desc, cmd, icon: currentCustomIcon });
+      state.set('personalCommands', [...state.personalCommands, { desc, cmd, icon: state.customIcon }]);
     }
 
-    storage.savePersonalCommands(personalCommands);
     customCmdDescInput.value = '';
     customCmdValInput.value = '';
     updateUI();
@@ -490,18 +541,17 @@ if (addCustomCmdBtn) {
 
 if (cancelCustomCmdBtn) {
     cancelCustomCmdBtn.addEventListener('click', () => {
-        editingIndex = null;
+        state.set('editingIndex', null);
         customCmdDescInput.value = '';
         customCmdValInput.value = '';
-        addCustomCmdBtn.querySelector('span').textContent = translations[currentLang].btnAddCommand;
+        addCustomCmdBtn.querySelector('span').textContent = translations[state.currentLang].btnAddCommand;
         cancelCustomCmdBtn.style.display = 'none';
     });
 }
 
 if (personalThemeColorInput) {
   personalThemeColorInput.addEventListener('input', (e) => {
-    personalThemeColor = e.target.value;
-    storage.savePersonalThemeColor(personalThemeColor);
+    state.set('personalThemeColor', e.target.value);
     applyPersonalTheme();
     refreshActiveModuleVault(); // Refresh icons color
   });
@@ -509,21 +559,22 @@ if (personalThemeColorInput) {
 
 // Favorites
 const toggleFavorite = (descEn) => {
-  const index = favorites.indexOf(descEn);
-  if (index === -1) favorites.push(descEn);
-  else favorites.splice(index, 1);
-  storage.saveFavorites(favorites);
+  const index = state.favorites.indexOf(descEn);
+  const updatedFavorites = [...state.favorites];
+  if (index === -1) updatedFavorites.push(descEn);
+  else updatedFavorites.splice(index, 1);
+  state.set('favorites', updatedFavorites);
   updateUI();
 };
 
 const renderFavoriteControls = () => {
   const controls = document.getElementById('fav-order-controls');
   if (!controls) return;
-  const t = translations[currentLang];
+  const t = translations[state.currentLang];
   
   controls.innerHTML = `<span style="font-size: 0.7rem; color: var(--text-secondary); margin-right: 8px; font-weight: 600;">${t.lblPriority || 'PRIORITY'}:</span>`;
   
-  favoriteOrder.filter(m => m !== 'personal').forEach((mod, idx) => {
+  state.favoriteOrder.filter(m => m !== 'personal').forEach((mod, idx) => {
     const btn = document.createElement('button');
     btn.className = `secondary-btn module-badge-${mod}`;
     btn.style.height = '28px';
@@ -535,10 +586,11 @@ const renderFavoriteControls = () => {
     btn.textContent = mod.toUpperCase();
     
     btn.onclick = () => {
-      const index = favoriteOrder.indexOf(mod);
-      favoriteOrder.splice(index, 1);
-      favoriteOrder.unshift(mod);
-      storage.saveFavoriteOrder(favoriteOrder);
+      const index = state.favoriteOrder.indexOf(mod);
+      const updatedOrder = [...state.favoriteOrder];
+      updatedOrder.splice(index, 1);
+      updatedOrder.unshift(mod);
+      state.set('favoriteOrder', updatedOrder);
       renderFavorites();
     };
     controls.appendChild(btn);
@@ -549,7 +601,7 @@ const renderFavorites = () => {
   const container = document.getElementById('favs-library-grid');
   if (!container) return;
   renderFavoriteControls();
-  const t = translations[currentLang];
+  const t = translations[state.currentLang];
   container.innerHTML = '';
   
   const gitParams = [gitParamInput.value, baseBranchInput.value, branchNameInput.value];
@@ -557,18 +609,18 @@ const renderFavorites = () => {
 
   const allData = [
     { module: 'git', data: GIT_LIBRARY, params: gitParams },
-    { module: 'node', data: NODE_LIBRARY, params: [currentMgr] },
+    { module: 'node', data: NODE_LIBRARY, params: [state.nodeMgr] },
     { module: 'docker', data: DOCKER_LIBRARY, params: dockerParams },
-    { module: 'personal', data: personalCommands.map(c => ({ 
+    { module: 'personal', data: state.personalCommands.map(c => ({ 
         desc: { en: c.desc, es: c.desc }, 
         cmd: c.cmd,
         isPersonal: true
       })), params: [branchNameInput.value, baseBranchInput.value] }
-  ].sort((a, b) => favoriteOrder.indexOf(a.module) - favoriteOrder.indexOf(b.module));
+  ].sort((a, b) => state.favoriteOrder.indexOf(a.module) - state.favoriteOrder.indexOf(b.module));
   
   let hasFavs = false;
   allData.forEach(lib => {
-    const favs = lib.data.filter(item => favorites.includes(item.desc.en));
+    const favs = lib.data.filter(item => state.favorites.includes(item.desc.en));
     if (favs.length > 0) hasFavs = true;
     favs.forEach(item => {
       const card = document.createElement('div');
@@ -585,7 +637,7 @@ const renderFavorites = () => {
         <div class="library-card-header">
           <div style="display: flex; flex-direction: column; gap: 4px;">
             <span class="module-badge module-badge-${lib.module}">${lib.module}</span>
-            <div class="cmd-desc">${item.desc[currentLang] || item.desc.en}</div>
+            <div class="cmd-desc">${item.desc[state.currentLang] || item.desc.en}</div>
           </div>
           <div class="card-actions">
             <button class="star-btn active" title="${t.titleRemoveFav || 'Remove'}">
@@ -626,7 +678,7 @@ const renderFavorites = () => {
 // --- THEME & HISTORY ---
 
 const applyPersonalTheme = () => {
-  const color = personalThemeColor;
+  const color = state.personalThemeColor;
   const rgb = utils.hexToRgb(color);
   if (personalThemeColorInput) {
     personalThemeColorInput.value = color;
@@ -643,40 +695,44 @@ const resetDynamicThemes = () => {
 
 const saveToHistory = (title, type) => {
   if (!title) return;
-  const existing = taskHistory.findIndex(h => h.title === title);
-  if (existing !== -1) taskHistory.splice(existing, 1);
-  taskHistory.unshift({ title, type, date: new Date().toISOString() });
-  taskHistory = taskHistory.slice(0, 5);
-  storage.saveHistory(taskHistory);
-  uiRender.renderHistory(taskHistory, loadHistoryItem);
+  const updatedHistory = [...state.taskHistory];
+  const existing = updatedHistory.findIndex(h => h.title === title);
+  if (existing !== -1) updatedHistory.splice(existing, 1);
+  updatedHistory.unshift({ title, type, date: new Date().toISOString() });
+  const finalHistory = updatedHistory.slice(0, 5);
+  state.set('taskHistory', finalHistory);
+  uiRender.renderHistory(finalHistory, loadHistoryItem);
 };
 
 const loadHistoryItem = (title, type) => {
   taskTitleInput.value = title;
-  currentType = type;
-  isManualBranch = isManualCommit = isManualType = true;
+  state.set('currentType', type);
+  state.set('isManualBranch', true);
+  state.set('isManualCommit', true);
+  state.set('isManualType', true);
   typeButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.type === type));
   updateUI();
 };
 
 const deletePersonalCommand = (index) => {
     utils.showConfirm(null, null, () => {
-        personalCommands.splice(index, 1);
-        storage.savePersonalCommands(personalCommands);
+        const updatedCommands = [...state.personalCommands];
+        updatedCommands.splice(index, 1);
+        state.set('personalCommands', updatedCommands);
         updateUI();
-    }, translations, currentLang);
+    }, translations, state.currentLang);
 };
 
 const startEditing = (index) => {
-    editingIndex = index;
-    const cmd = personalCommands[index];
-    const t = translations[currentLang];
+    state.set('editingIndex', index);
+    const cmd = state.personalCommands[index];
+    const t = translations[state.currentLang];
     customCmdDescInput.value = cmd.desc;
     customCmdValInput.value = cmd.cmd;
-    currentCustomIcon = cmd.icon || 'lock';
+    state.set('customIcon', cmd.icon || 'lock');
     
     iconOpts.forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.icon === currentCustomIcon);
+      btn.classList.toggle('active', btn.dataset.icon === state.customIcon);
     });
     
     addCustomCmdBtn.querySelector('span').textContent = t.btnSaveCommand;
@@ -687,5 +743,5 @@ const startEditing = (index) => {
 // Initial Start
 applyPersonalTheme();
 updateTranslations();
-uiRender.renderHistory(taskHistory, loadHistoryItem);
+uiRender.renderHistory(state.taskHistory, loadHistoryItem);
 if (window.lucide) window.lucide.createIcons();
