@@ -1622,3 +1622,14 @@ footer {
   color: var(--text-primary);
   transform: scale(1.1);
 }
+
+.btn-flash {
+  animation: btn-flash-anim 0.2s ease-out;
+}
+
+@keyframes btn-flash-anim {
+  0% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(0.95); filter: brightness(1.5); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+

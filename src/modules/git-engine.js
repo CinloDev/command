@@ -74,13 +74,3 @@ export const sanitizeBranchName = (text) => {
     .replace(/\s+/g, '-')
     .replace(/[^\w\d\/\-._]/g, '');
 };
-
-/**
- * Heuristic to check if text is likely Spanish.
- */
-export const isSpanishText = (text) => {
-  if (!text) return false;
-  const hasSpanishChars = /[áéíóúüñ]/i.test(text);
-  const commonSpanishWords = /\b(el|la|los|las|de|con|para|por|falla|error|inicio|migrar|nuevo|sistema|visual|reemplazar|unificar|crear|borrar|actualizar|quitar)\b/i.test(text);
-  return hasSpanishChars || commonSpanishWords;
-};
