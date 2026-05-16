@@ -19,8 +19,16 @@ export const renderLibrary = (type, data, gridId, searchTerm = '', favorites = [
     const search = searchTerm.toLowerCase();
     return desc.includes(search) || tags.includes(search);
   });
-
-  filtered.forEach(item => {
+  
+  const sorted = [...filtered].sort((a, b) => {
+    const aFav = favorites.includes(a.desc.en);
+    const bFav = favorites.includes(b.desc.en);
+    if (aFav && !bFav) return -1;
+    if (!aFav && bFav) return 1;
+    return 0;
+  });
+  
+  sorted.forEach(item => {
     const card = document.createElement('div');
     card.className = 'library-card';
     const isFav = favorites.includes(item.desc.en);
@@ -65,7 +73,7 @@ export const renderLibrary = (type, data, gridId, searchTerm = '', favorites = [
 /**
  * Renders the Personal Vault library.
  */
-export const renderPersonalLibrary = (personalCommands, themeColor, translations, lang, branchName, baseBranch, onEdit, onDelete, onCopy) => {
+export const renderPersonalLibrary = (personalCommands, themeColor, translations, lang, branchName, baseBranch, favorites = [], onEdit, onDelete, onCopy, onToggleFav) => {
   const grid = document.getElementById('personal-library-grid');
   if (!grid) return;
   grid.innerHTML = '';
@@ -80,14 +88,27 @@ export const renderPersonalLibrary = (personalCommands, themeColor, translations
     return;
   }
 
-  personalCommands.forEach((item, index) => {
+  const sorted = [...personalCommands].sort((a, b) => {
+    const aFav = favorites.includes(a.desc);
+    const bFav = favorites.includes(b.desc);
+    if (aFav && !bFav) return -1;
+    if (!aFav && bFav) return 1;
+    return 0;
+  });
+
+  sorted.forEach((item, sortedIdx) => {
+    // We need the original index for edit/delete if we use the original array
+    // But it's better to pass the item itself or find it by desc
+    const originalIndex = personalCommands.findIndex(c => c.desc === item.desc && c.cmd === item.cmd);
+    
     const card = document.createElement('div');
-    card.className = 'library-card personal-card';
+    const isFav = favorites.includes(item.desc);
+    card.className = `library-card personal-card ${isFav ? 'pinned' : ''}`;
     const iconName = item.icon || 'lock';
     const finalCmd = (item.cmd || "").replace(/{branch}/g, branchName).replace(/{base}/g, baseBranch);
-    
-    const lines = finalCmd.split('\n').filter(l => l.trim().length > 0);
-    const isMultiline = lines.length > 1;
+    const isBlock = item.isBlock || false;
+    const lines = isBlock ? [finalCmd] : finalCmd.split('\n').filter(l => l.trim().length > 0);
+    const isMultiline = lines.length > 1 || (isBlock && finalCmd.includes('\n'));
 
     card.innerHTML = `
       <div class="personal-card-header" style="display: flex; justify-content: space-between; align-items: center; cursor: ${isMultiline ? 'pointer' : 'default'}">
@@ -95,10 +116,16 @@ export const renderPersonalLibrary = (personalCommands, themeColor, translations
           <div style="color: ${themeColor}; display: flex; align-items: center;">
             <i data-lucide="${iconName}" style="width: 18px; height: 18px;"></i>
           </div>
-          <div class="cmd-desc">${item.desc}</div>
+          <div class="cmd-desc" style="display: flex; align-items: center; gap: 8px;">
+            ${item.desc}
+            ${isBlock ? `<span style="font-size: 0.6rem; background: ${themeColor}22; color: ${themeColor}; padding: 2px 6px; border-radius: 4px; border: 1px solid ${themeColor}44;">BLOCK</span>` : ''}
+          </div>
           ${isMultiline ? `<i data-lucide="chevron-down" class="expand-icon" style="width: 14px; height: 14px; opacity: 0.5; color: ${themeColor};"></i>` : ''}
         </div>
         <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="star-btn ${isFav ? 'active' : ''}" title="${isFav ? 'Unpin' : 'Pin'}" style="color: ${isFav ? themeColor : 'var(--text-secondary)'}">
+            <i data-lucide="star" ${isFav ? 'fill="currentColor"' : ''} style="width: 16px; height: 16px;"></i>
+          </button>
           <button class="edit-btn" title="Edit" style="color: var(--text-secondary)"><i data-lucide="pencil" style="width: 16px; height: 16px;"></i></button>
           <button class="delete-btn" title="Delete" style="color: var(--text-secondary)"><i data-lucide="trash-2" style="width: 16px; height: 16px;"></i></button>
           <button class="copy-all-btn" title="Copy All" style="color: ${themeColor}"><i data-lucide="copy" style="width: 18px; height: 18px;"></i></button>
@@ -130,8 +157,9 @@ export const renderPersonalLibrary = (personalCommands, themeColor, translations
       row.onclick = () => copyToClipboard(line, row, translations[lang].copied);
     });
 
-    card.querySelector('.edit-btn').onclick = (e) => { e.stopPropagation(); onEdit(index); };
-    card.querySelector('.delete-btn').onclick = (e) => { e.stopPropagation(); onDelete(index); };
+    card.querySelector('.star-btn').onclick = (e) => { e.stopPropagation(); if (onToggleFav) onToggleFav(item.desc); };
+    card.querySelector('.edit-btn').onclick = (e) => { e.stopPropagation(); onEdit(originalIndex); };
+    card.querySelector('.delete-btn').onclick = (e) => { e.stopPropagation(); onDelete(originalIndex); };
     card.querySelector('.copy-all-btn').onclick = (e) => { e.stopPropagation(); onCopy(finalCmd, card.querySelector('.copy-all-btn')); };
 
     grid.appendChild(card);
