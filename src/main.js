@@ -219,7 +219,7 @@ const refreshActiveModuleVault = () => {
         renderNodeLibrary();
     }
     if (state.currentActiveModule === 'docker') renderDockerCommands();
-    if (state.currentActiveModule === 'personal') uiRender.renderPersonalLibrary(state.personalCommands, state.personalThemeColor, translations, state.currentLang, branchNameInput.value, baseBranchInput.value, startEditing, deletePersonalCommand, (cmd, btn) => utils.copyToClipboard(cmd, btn, translations[state.currentLang].copied));
+    if (state.currentActiveModule === 'personal') uiRender.renderPersonalLibrary(state.personalCommands, state.personalThemeColor, translations, state.currentLang, branchNameInput.value, baseBranchInput.value, state.favorites, startEditing, deletePersonalCommand, (cmd, btn) => utils.copyToClipboard(cmd, btn, translations[state.currentLang].copied), toggleFavorite);
 };
 
 const validateBranch = (name) => {

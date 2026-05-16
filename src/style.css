@@ -273,21 +273,25 @@ body:not([class*="theme-"]) .task-history {
   transition: var(--transition);
 }
 
+.nav-item i,
 .nav-item img {
   width: 20px;
   height: 20px;
-  filter: opacity(0.7);
+  opacity: 0.7;
   transition: var(--transition);
 }
 
+.nav-item:hover i,
+.nav-item.active i,
 .nav-item:hover img,
 .nav-item.active img {
-  filter: opacity(1);
+  opacity: 1;
 }
 
+.nav-item.active i,
 .nav-item.active img {
+  /* Inherits color: #000 from .nav-item.active for <i> */
   filter: brightness(0);
-  /* Icono oscuro sobre el fondo de acento brillante */
 }
 
 .nav-item:hover {
@@ -918,6 +922,25 @@ body:not([class*="theme-"]) .task-history {
   flex-direction: column;
   gap: 8px;
   transition: var(--transition);
+  position: relative;
+}
+
+.library-card.pinned {
+  border-color: var(--accent-primary) !important;
+  background: rgba(var(--accent-primary-rgb), 0.08) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.library-card.pinned::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--accent-primary);
+  border-radius: 4px 0 0 4px;
+  box-shadow: 2px 0 10px rgba(var(--accent-primary-rgb), 0.3);
 }
 
 .library-card-header {
