@@ -73,22 +73,29 @@ export const renderLibrary = (type, data, gridId, searchTerm = '', favorites = [
 /**
  * Renders the Personal Vault library.
  */
-export const renderPersonalLibrary = (personalCommands, themeColor, translations, lang, branchName, baseBranch, favorites = [], onEdit, onDelete, onCopy, onToggleFav) => {
+export const renderPersonalLibrary = (personalCommands, themeColor, translations, lang, branchName, baseBranch, favorites = [], onEdit, onDelete, onCopy, onToggleFav, searchTerm = '') => {
   const grid = document.getElementById('personal-library-grid');
   if (!grid) return;
   grid.innerHTML = '';
 
-  if (personalCommands.length === 0) {
+  const filtered = personalCommands.filter(item => {
+    const desc = (item.desc || '').toLowerCase();
+    const cmd = (item.cmd || '').toLowerCase();
+    const search = (searchTerm || '').toLowerCase();
+    return desc.includes(search) || cmd.includes(search);
+  });
+
+  if (filtered.length === 0) {
     grid.innerHTML = `
       <div class="empty-state" style="grid-column: 1 / -1; padding: 40px; border: 1px dashed var(--card-border); border-radius: 12px;">
-        <i data-lucide="lock" style="width: 48px; height: 48px; opacity: 0.2; margin-bottom: 10px;"></i>
-        <p style="color: var(--text-secondary); font-size: 0.9rem;">No personal commands yet. Add your first one above!</p>
+        <i data-lucide="search" style="width: 48px; height: 48px; opacity: 0.2; margin-bottom: 10px;"></i>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">${searchTerm ? 'No commands found matching your search.' : 'No personal commands yet. Add your first one above!'}</p>
       </div>`;
     if (window.lucide) window.lucide.createIcons();
     return;
   }
 
-  const sorted = [...personalCommands].sort((a, b) => {
+  const sorted = [...filtered].sort((a, b) => {
     const aFav = favorites.includes(a.desc);
     const bFav = favorites.includes(b.desc);
     if (aFav && !bFav) return -1;

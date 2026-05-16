@@ -10,13 +10,18 @@ export const StorageKeys = {
   PERSONAL_COMMANDS: 'personalCommands',
   FAVORITE_ORDER: 'favoriteOrder',
   PERSONAL_THEME_COLOR: 'personalThemeColor',
-  AUTO_TRANSLATE: 'autoTranslate'
+  AUTO_TRANSLATE: 'autoTranslate',
+  ACTIVE_MODULE: 'activeModule'
 };
 
 export const storage = {
   // Language
   getLang: () => localStorage.getItem(StorageKeys.LANG) || 'en',
   setLang: (lang) => localStorage.setItem(StorageKeys.LANG, lang),
+
+  // Active Module
+  getActiveModule: () => localStorage.getItem(StorageKeys.ACTIVE_MODULE) || 'git',
+  saveActiveModule: (module) => localStorage.setItem(StorageKeys.ACTIVE_MODULE, module),
 
   // Task History
   getHistory: () => JSON.parse(localStorage.getItem(StorageKeys.TASK_HISTORY)) || [],
