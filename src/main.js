@@ -58,6 +58,7 @@ const customCmdDescInput = document.getElementById('custom-cmd-desc');
 const customCmdValInput = document.getElementById('custom-cmd-val');
 const txtCancelEdit = document.getElementById('txt-cancel-edit');
 const personalThemeColorInput = document.getElementById('personal-theme-color');
+const customCmdIsBlockInput = document.getElementById('custom-cmd-is-block');
 
 // (State is now central in state module)
 
@@ -523,21 +524,24 @@ if (addCustomCmdBtn) {
     const cmd = customCmdValInput.value.trim();
     const t = translations[state.currentLang];
 
+    const isBlock = customCmdIsBlockInput ? customCmdIsBlockInput.checked : false;
+
     if (!desc || !cmd) return;
 
     if (state.editingIndex !== null) {
       const updatedCommands = [...state.personalCommands];
-      updatedCommands[state.editingIndex] = { desc, cmd, icon: state.customIcon };
+      updatedCommands[state.editingIndex] = { desc, cmd, icon: state.customIcon, isBlock };
       state.set('personalCommands', updatedCommands);
       state.set('editingIndex', null);
       addCustomCmdBtn.querySelector('span').textContent = t.btnAddCommand;
       cancelCustomCmdBtn.style.display = 'none';
     } else {
-      state.set('personalCommands', [...state.personalCommands, { desc, cmd, icon: state.customIcon }]);
+      state.set('personalCommands', [...state.personalCommands, { desc, cmd, icon: state.customIcon, isBlock }]);
     }
 
     customCmdDescInput.value = '';
     customCmdValInput.value = '';
+    if (customCmdIsBlockInput) customCmdIsBlockInput.checked = false;
     updateUI();
   });
 }
@@ -797,6 +801,8 @@ const startEditing = (index) => {
     iconOpts.forEach(btn => {
       btn.classList.toggle('active', btn.dataset.icon === state.customIcon);
     });
+    
+    if (customCmdIsBlockInput) customCmdIsBlockInput.checked = cmd.isBlock || false;
     
     addCustomCmdBtn.querySelector('span').textContent = t.btnSaveCommand;
     cancelCustomCmdBtn.style.display = 'flex';

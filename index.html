@@ -131,14 +131,25 @@
               </div>
             </div>
 
-            <div style="display: flex; justify-content: flex-end; gap: 10px;">
-              <button id="cancel-custom-cmd-btn" class="secondary-btn" style="display: none;">
-                <span id="txt-cancel-edit">Cancel</span>
-              </button>
-              <button id="add-custom-cmd-btn" class="secondary-btn" style="background: var(--accent-primary); color: #000; font-weight: 600; border: none;">
-                <i data-lucide="plus"></i>
-                <span id="txt-add-command">Add Command</span>
-              </button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+              <div class="toggle-group">
+                <label class="switch-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                  <div class="switch">
+                    <input type="checkbox" id="custom-cmd-is-block" style="display: none;">
+                    <div class="slider"></div>
+                  </div>
+                  <span id="lbl-block-mode" style="font-size: 0.8rem; color: var(--text-secondary);">Block Mode (Multiple lines as one)</span>
+                </label>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button id="cancel-custom-cmd-btn" class="secondary-btn" style="display: none;">
+                  <span id="txt-cancel-edit">Cancel</span>
+                </button>
+                <button id="add-custom-cmd-btn" class="secondary-btn" style="background: var(--accent-primary); color: #000; font-weight: 600; border: none;">
+                  <i data-lucide="plus"></i>
+                  <span id="txt-add-command">Add Command</span>
+                </button>
+              </div>
             </div>
           </div>
 

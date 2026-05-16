@@ -106,9 +106,9 @@ export const renderPersonalLibrary = (personalCommands, themeColor, translations
     card.className = `library-card personal-card ${isFav ? 'pinned' : ''}`;
     const iconName = item.icon || 'lock';
     const finalCmd = (item.cmd || "").replace(/{branch}/g, branchName).replace(/{base}/g, baseBranch);
-    
-    const lines = finalCmd.split('\n').filter(l => l.trim().length > 0);
-    const isMultiline = lines.length > 1;
+    const isBlock = item.isBlock || false;
+    const lines = isBlock ? [finalCmd] : finalCmd.split('\n').filter(l => l.trim().length > 0);
+    const isMultiline = lines.length > 1 || (isBlock && finalCmd.includes('\n'));
 
     card.innerHTML = `
       <div class="personal-card-header" style="display: flex; justify-content: space-between; align-items: center; cursor: ${isMultiline ? 'pointer' : 'default'}">
@@ -116,7 +116,10 @@ export const renderPersonalLibrary = (personalCommands, themeColor, translations
           <div style="color: ${themeColor}; display: flex; align-items: center;">
             <i data-lucide="${iconName}" style="width: 18px; height: 18px;"></i>
           </div>
-          <div class="cmd-desc">${item.desc}</div>
+          <div class="cmd-desc" style="display: flex; align-items: center; gap: 8px;">
+            ${item.desc}
+            ${isBlock ? `<span style="font-size: 0.6rem; background: ${themeColor}22; color: ${themeColor}; padding: 2px 6px; border-radius: 4px; border: 1px solid ${themeColor}44;">BLOCK</span>` : ''}
+          </div>
           ${isMultiline ? `<i data-lucide="chevron-down" class="expand-icon" style="width: 14px; height: 14px; opacity: 0.5; color: ${themeColor};"></i>` : ''}
         </div>
         <div style="display: flex; gap: 8px; align-items: center;">
