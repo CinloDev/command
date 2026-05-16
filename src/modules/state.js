@@ -20,7 +20,7 @@ export const state = {
   isManualBranch: false,
   isManualCommit: false,
   isManualType: false,
-  currentActiveModule: 'git',
+  currentActiveModule: storage.getActiveModule(),
 
   // Node & Docker state
   nodeMgr: 'pnpm',
@@ -62,6 +62,9 @@ export const state = {
         break;
       case 'autoTranslateEnabled':
         storage.saveAutoTranslate(value);
+        break;
+      case 'currentActiveModule':
+        storage.saveActiveModule(value);
         break;
     }
   }

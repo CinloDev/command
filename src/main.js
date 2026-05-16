@@ -59,6 +59,7 @@ const customCmdValInput = document.getElementById('custom-cmd-val');
 const txtCancelEdit = document.getElementById('txt-cancel-edit');
 const personalThemeColorInput = document.getElementById('personal-theme-color');
 const customCmdIsBlockInput = document.getElementById('custom-cmd-is-block');
+const personalSearchInput = document.getElementById('personal-search');
 
 // (State is now central in state module)
 
@@ -220,7 +221,7 @@ const refreshActiveModuleVault = () => {
         renderNodeLibrary();
     }
     if (state.currentActiveModule === 'docker') renderDockerCommands();
-    if (state.currentActiveModule === 'personal') uiRender.renderPersonalLibrary(state.personalCommands, state.personalThemeColor, translations, state.currentLang, branchNameInput.value, baseBranchInput.value, state.favorites, startEditing, deletePersonalCommand, (cmd, btn) => utils.copyToClipboard(cmd, btn, translations[state.currentLang].copied), toggleFavorite);
+    if (state.currentActiveModule === 'personal') uiRender.renderPersonalLibrary(state.personalCommands, state.personalThemeColor, translations, state.currentLang, branchNameInput.value, baseBranchInput.value, state.favorites, startEditing, deletePersonalCommand, (cmd, btn) => utils.copyToClipboard(cmd, btn, translations[state.currentLang].copied), toggleFavorite, personalSearchInput.value);
 };
 
 const validateBranch = (name) => {
@@ -556,6 +557,12 @@ if (cancelCustomCmdBtn) {
     });
 }
 
+if (personalSearchInput) {
+  personalSearchInput.addEventListener('input', () => {
+    refreshActiveModuleVault();
+  });
+}
+
 if (personalThemeColorInput) {
   personalThemeColorInput.addEventListener('input', (e) => {
     state.set('personalThemeColor', e.target.value);
@@ -812,5 +819,16 @@ const startEditing = (index) => {
 // Initial Start
 applyPersonalTheme();
 updateTranslations();
+
+// Restore active module from session
+if (state.currentActiveModule !== 'git') {
+    const activeItem = Array.from(navItems).find(i => i.dataset.module === state.currentActiveModule);
+    if (activeItem) {
+        // Remove active from others to ensure click() works correctly
+        navItems.forEach(n => n.classList.remove('active'));
+        activeItem.click();
+    }
+}
+
 uiRender.renderHistory(state.taskHistory, loadHistoryItem);
 if (window.lucide) window.lucide.createIcons();

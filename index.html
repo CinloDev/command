@@ -88,6 +88,10 @@
               <p id="txt-personal-subtitle" style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">Your personal commands saved locally in this browser.</p>
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
+              <div class="search-box" style="max-width: 250px; margin-right: 10px;">
+                <i data-lucide="search" style="width: 14px; height: 14px;"></i>
+                <input type="text" id="personal-search" placeholder="Search vault..." autocomplete="off" style="height: 38px; font-size: 0.8rem;">
+              </div>
               <div class="vault-actions" style="display: flex; gap: 8px; margin-right: 8px; border-right: 1px solid var(--card-border); padding-right: 12px;">
                 <button id="export-vault-btn" class="icon-btn-secondary" title="Export JSON">
                   <i data-lucide="download"></i>
