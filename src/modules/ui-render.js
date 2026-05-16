@@ -171,7 +171,12 @@ export const renderCommands = (branch, commitMsg, currentWorkflow, baseBranch, c
 
     const t = translations[lang] || translations.en;
     const safeBranch = branch || 'task';
-    const safeCommit = commitMsg || `${currentType}: update`;
+    let content = commitMsg || `${currentType}: update`;
+    // If user provided quotes, they probably meant them as delimiters; strip them to handle manually
+    if (content.startsWith('"') && content.endsWith('"') && content.length >= 2) {
+      content = content.substring(1, content.length - 1);
+    }
+    const escapedCommit = content.replace(/"/g, '\\"');
     
     let commands = [];
     if (currentWorkflow === 'recreate') {
@@ -191,7 +196,7 @@ export const renderCommands = (branch, commitMsg, currentWorkflow, baseBranch, c
         { label: t.cmdCreate || 'Create', cmd: `git checkout -b ${safeBranch}` },
         { label: t.cmdStatus || 'Status', cmd: `git status` },
         { label: t.cmdStage || 'Stage', cmd: `git add .` },
-        { label: t.cmdCommit || 'Commit', cmd: `git commit -m "${safeCommit}"` },
+        { label: t.cmdCommit || 'Commit', cmd: `git commit -m "${escapedCommit}"` },
         { label: t.cmdPush || 'Push', cmd: `git push -u origin ${safeBranch}` }
       );
     }
